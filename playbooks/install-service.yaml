@@ -1,0 +1,20 @@
+---
+- name: Setup custom service
+  hosts: all
+  become: yes
+  vars:
+    service_src_path: "{{ service_src_path }}"
+    service_name: "{{ service_src_path | basename }}"
+    "
+  tasks:
+    - name: Create symlink in /etc/systemd/system/
+      file:
+        src: "{{ service_src_path }}"
+        dest: "/etc/systemd/system/{{ basename }}"
+        state: link
+        force: yes
+
+    - name: Reload systemd to pick up new service
+      command: systemctl daemon-reload
+      args:
+        warn: false

@@ -32,7 +32,11 @@ def main():
         sys.exit(1)
 
     # Build command to execute
-    cmd = [script] + args
+    # If script is a Python file, run it with python3
+    if script.endswith(".py"):
+        cmd = ["python3", script] + args
+    else:
+        cmd = [script] + args
 
     print(f"Launching: {' '.join(cmd)}")
 
