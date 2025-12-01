@@ -1,0 +1,4 @@
+script: "/home/pi/tile-management/tiles/dummy.py"
+args:
+  - "--message"
+  - "Hello"

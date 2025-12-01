@@ -1,0 +1,15 @@
+[Unit]
+Description=Config-driven script launcher
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/pi/tile-management/tiles/experiment_launcher.py /home/pi/tile-management/tiles/experiment-config.yaml
+WorkingDirectory=/home/pi/techtile-management
+Restart=on-failure
+KillMode=process
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
