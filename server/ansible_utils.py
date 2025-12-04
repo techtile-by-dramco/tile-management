@@ -2,6 +2,7 @@ import os
 import shutil
 import ansible_runner
 import json
+import re
 from ansible.parsing.dataloader import DataLoader
 from ansible.inventory.manager import InventoryManager
 from ansible.vars.manager import VariableManager
@@ -43,7 +44,7 @@ def get_target_hosts(inventory_path, limit=None, suppress_warnings=True):
     return inventory.get_hosts()
 
 def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
-                 hosts=None, mute_output=False, cleanup=True):
+                 hosts=None, mute_output=False, suppress_warnings=True, cleanup=True):
     """
     Wrapper to run an Ansible playbook using ansible-runner.
 
@@ -59,6 +60,13 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
     Raises:
         RuntimeError: if the playbook returns a non-zero return code
     """
+    successful_hosts = ""
+    nr_succeeded = 0
+    ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
+    
+    if suppress_warnings:
+        disable_ansible_warnings()
+    
     # Normalize extra_vars
     if extra_vars is None:
         extra_vars = {}
@@ -74,18 +82,22 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
             playbook=playbook_path,
             inventory=inventory_path,
             extravars=extra_vars,
-            limit=hosts
+            limit=hosts,
+            quiet=mute_output
         )
 
         if not mute_output:
             print("Status:", r.status)
             print("Return code:", r.rc)
-            for event in r.events:
-                if 'stdout' in event:
-                    print(event['stdout'])
-
-        if r.rc != 0:
-            raise RuntimeError(f"Ansible playbook failed with return code {r.rc}")
+        for event in r.events:
+            if 'stdout' in event:
+                if 'ok: [' in event['stdout']:
+                    s = ansi_escape.sub('', event['stdout']).strip()
+                    name = s.split("[")[1].split("]")[0]
+                    if len(successful_hosts) > 0:
+                        successful_hosts += " "
+                    successful_hosts += name
+                    nr_succeeded += 1
 
     except FileNotFoundError as e:
         print(f"File not found: {e}")
@@ -102,4 +114,4 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
             shutil.rmtree(os.path.join(project_dir, "artifacts"), ignore_errors=True)
             shutil.rmtree(os.path.join(project_dir, "env"), ignore_errors=True)
 
-        return r
+        return (successful_hosts, nr_succeeded)

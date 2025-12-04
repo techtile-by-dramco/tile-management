@@ -15,6 +15,7 @@
       - "Pictures"
       - "Videos"
       - "Music"
+      - "tile-management"
     preserve_files:
       - ".bashrc"
       - ".profile"
