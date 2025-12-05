@@ -2,7 +2,7 @@
 # Makes sure packages are installed on the client
 ---
 - name: Install packages on Debian/Ubuntu
-  hosts: wrong_host_fallback
+  hosts: all
   gather_facts: no
   become: yes
   vars:

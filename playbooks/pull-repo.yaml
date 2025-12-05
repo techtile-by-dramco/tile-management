@@ -2,7 +2,7 @@
 # Clones or pulls a git repository
 ---
 - name: Ensure Git repository is present
-  hosts: wrong_host_fallback
+  hosts: all
   gather_facts: no
   vars:
     repo_url: "https://github.com/{{ org_name }}/{{ repo_name }}.git"

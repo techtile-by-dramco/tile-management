@@ -2,7 +2,7 @@
 # Cleans the client home directory
 ---
 - name: Clean home directory safely
-  hosts: wrong_host_fallback
+  hosts: all
   gather_facts: no
   become: yes
   vars:

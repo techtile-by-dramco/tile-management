@@ -41,7 +41,11 @@ def get_target_hosts(inventory_path, limit=None, suppress_warnings=True):
     if limit:
         inventory.subset(limit)
 
-    return inventory.get_hosts()
+    hl = inventory.get_hosts()
+    host_list = []
+    for host in hl:
+        host_list.append(str(host))
+    return host_list
 
 def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
                  hosts=None, mute_output=False, suppress_warnings=True, cleanup=True):

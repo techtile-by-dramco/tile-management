@@ -1,6 +1,6 @@
 ---
 - name: Setup custom service
-  hosts: wrong_host_fallback
+  hosts: all
   gather_facts: no
   become: yes
   vars:

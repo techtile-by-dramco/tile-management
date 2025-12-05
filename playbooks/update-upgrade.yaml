@@ -2,7 +2,7 @@
 # Run apt update/upgrade on the client
 ---
 - name: Safely update and upgrade apt packages
-  hosts: wrong_host_fallback
+  hosts: all
   gather_facts: no
   become: yes
   tasks:
