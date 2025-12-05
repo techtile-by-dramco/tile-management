@@ -2,7 +2,8 @@
 # Run apt update/upgrade on the client
 ---
 - name: Safely update and upgrade apt packages
-  hosts: all
+  hosts: wrong_host_fallback
+  gather_facts: no
   become: yes
   tasks:
 
@@ -35,7 +36,7 @@
       ansible.builtin.apt:
         upgrade: dist
       register: upgrade_result
-      retries: 5
-      delay: 10
+      retries: 3
+      delay: 5
       until: upgrade_result is succeeded
 

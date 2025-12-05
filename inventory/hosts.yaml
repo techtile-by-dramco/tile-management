@@ -59,6 +59,7 @@ all:
         label: MS9
         nr-ports: 12
   hosts:
+    wrong_host_fallback: {}
     Techtile:
       ansible_host: techtile-server
       ip: 192.108.0.1  

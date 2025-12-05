@@ -1,6 +1,6 @@
 ---
 - name: Ping all hosts
-  hosts: all
+  hosts: wrong_host_fallback
   gather_facts: no
 
   tasks:

@@ -3,7 +3,8 @@
 # ansible-playbook -i hosts.yaml run_status.yml --extra-vars "script_path=/tmp/my_script.sh" [--limit a-single host]
 ---
 - name: Run script asynchronously and check result
-  hosts: all
+  hosts: wrong_host_fallback
+  gather_facts: no
   become: no
   vars:
     default_script_path: "/home/pi/check_status.sh"

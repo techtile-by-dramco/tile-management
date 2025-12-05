@@ -2,10 +2,11 @@
 # Makes sure packages are installed on the client
 ---
 - name: Install packages on Debian/Ubuntu
-  hosts: all
+  hosts: wrong_host_fallback
+  gather_facts: no
   become: yes
   vars:
-    packages_to_install:
+    packages_default:
       - git
       - python3-venv
       - build-essential
@@ -14,8 +15,8 @@
       - uhd-host
       - cmake
       - libboost-all-dev
-      - python3-scipy
-      - python3-zmq
+
+    packages_to_install: "{{ packages_default + (extra_packages | default([])) }}"
 
   tasks:
     - name: Update apt cache

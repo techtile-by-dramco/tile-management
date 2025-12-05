@@ -60,7 +60,13 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
     Raises:
         RuntimeError: if the playbook returns a non-zero return code
     """
-    successful_hosts = ""
+    
+    def get_name_from_line(line):
+        s = ansi_escape.sub('', line).strip()
+        name = s.split("[")[1].split("]")[0]
+        return name
+    
+    successful_hosts = []
     nr_succeeded = 0
     ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
     
@@ -86,18 +92,27 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
             quiet=mute_output
         )
 
+        # print playbook result
         if not mute_output:
             print("Status:", r.status)
             print("Return code:", r.rc)
+
+        # determine which hosts were successful
         for event in r.events:
             if 'stdout' in event:
-                if 'ok: [' in event['stdout']:
-                    s = ansi_escape.sub('', event['stdout']).strip()
-                    name = s.split("[")[1].split("]")[0]
-                    if len(successful_hosts) > 0:
-                        successful_hosts += " "
-                    successful_hosts += name
-                    nr_succeeded += 1
+                if 'ok: [' in event['stdout'] or 'changed: [' in event['stdout'] or 'skipped: [' in event['stdout']:
+                    name = get_name_from_line(event['stdout'])
+                    if not name in successful_hosts:
+                        successful_hosts.append(name)
+                        nr_succeeded += 1
+                if 'failed: [' in event['stdout'] or 'unreachable: [' in event['stdout'] or 'ignored: [' in event['stdout']:
+                    name = get_name_from_line(event['stdout'])
+                    if name in successful_hosts: # previous task was succesful, but current task failed
+                        try:
+                            successful_hosts.remove(name)
+                            nr_succeeded -= 1
+                        except ValueError as e:
+                            print("Could not remove", name, "from the list with successful hosts, but it failed")
 
     except FileNotFoundError as e:
         print(f"File not found: {e}")
@@ -114,4 +129,4 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
             shutil.rmtree(os.path.join(project_dir, "artifacts"), ignore_errors=True)
             shutil.rmtree(os.path.join(project_dir, "env"), ignore_errors=True)
 
-        return (successful_hosts, nr_succeeded)
+        return (" ".join(sorted(successful_hosts)), nr_succeeded)

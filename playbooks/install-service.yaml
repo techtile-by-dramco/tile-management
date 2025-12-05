@@ -1,6 +1,7 @@
 ---
 - name: Setup custom service
-  hosts: all
+  hosts: wrong_host_fallback
+  gather_facts: no
   become: yes
   vars:
     service_src_path: "{{ service_src_path }}"
