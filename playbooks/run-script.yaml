@@ -7,10 +7,12 @@
   gather_facts: no
   become: no
   vars:
-    default_script_path: "/home/pi/check_status.sh"
+    default_script_path: "/home/pi/tile-management/tiles/dummy.sh"
     script_timeout: 3600  # max runtime in seconds
     sudo: "{{ sudo | default(no) }}" # sudo=[yes|no]
     sudo_flags: "{{ sudo_flags }}"
+    script_args: "{{ script_args | default('') }}"
+
 
   tasks:
     - name: Set script path (use extra-var if provided, otherwise default)
@@ -34,7 +36,7 @@
       when: script_stat.stat.exists
 
     - name: Run the script asynchronously
-      ansible.builtin.command: "{{ script_path }}"
+      ansible.builtin.command: "{{ script_path }} {{ script_args | default('') }}"
       become: "{{ sudo }}"
       become_flags: "{{ sudo_flags }}"
       async: "{{ script_timeout }}"
