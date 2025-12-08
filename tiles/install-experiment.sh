@@ -4,12 +4,43 @@ set -euo pipefail
 SERVICE_FILE="/home/pi/tile-management/tiles/experiment-launcher.service"
 TARGET_LINK="/etc/systemd/system/$(basename "$SERVICE_FILE")"
 
+DEFAULT_CONFIG="/home/pi/tile-management/tiles/experiment-config.yaml"
+DEFAULT_WORKDIR="/home/pi/tile-management"
+
 usage() {
-    echo "Usage: $0 {install|remove}"
+    echo "Usage:"
+    echo "  $0 install [config_path] [working_directory]"
+    echo "  $0 remove"
     exit 1
 }
 
+update_service_file() {
+    local config_path="$1"
+    local working_dir="$2"
+
+    echo "Updating service file with:"
+    echo "  CONFIG: $config_path"
+    echo "  WORKDIR: $working_dir"
+
+    # Create a temp file
+    tmpfile="$(mktemp)"
+
+    # Update ExecStart and WorkingDirectory safely
+    sed \
+        -e "s|^ExecStart=.*|ExecStart=/usr/bin/python3 /home/pi/tile-management/tiles/experiment-launcher.py $config_path|" \
+        -e "s|^WorkingDirectory=.*|WorkingDirectory=$working_dir|" \
+        "$SERVICE_FILE" > "$tmpfile"
+
+    # Overwrite original
+    mv "$tmpfile" "$SERVICE_FILE"
+}
+
 install_link() {
+    local config_path="${1:-$DEFAULT_CONFIG}"
+    local working_dir="${2:-$DEFAULT_WORKDIR}"
+
+    update_service_file "$config_path" "$working_dir"
+
     echo "Installing systemd service link..."
 
     if [ ! -f "$SERVICE_FILE" ]; then
@@ -48,13 +79,10 @@ remove_link() {
 }
 
 # --- MAIN LOGIC ---
-if [ $# -ne 1 ]; then
-    usage
-fi
-
-case "$1" in
+case "${1:-}" in
     install)
-        install_link
+        shift
+        install_link "$@"
         ;;
     remove)
         remove_link
