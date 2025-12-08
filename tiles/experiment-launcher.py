@@ -24,7 +24,7 @@ def main():
         print(f"ERROR: Failed to read YAML: {e}")
         sys.exit(1)
 
-    script = config.get("script")
+    script = config.get("script", "/home/pi/tile-management/tiles/dummy.py")
     args = config.get("args", [])
 
     if not script:
