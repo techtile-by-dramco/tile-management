@@ -24,12 +24,14 @@ def main():
         print(f"ERROR: Failed to read YAML: {e}")
         sys.exit(1)
 
-    script = config.get("script", "/home/pi/tile-management/tiles/dummy.py")
-    args = config.get("args", [])
-
+    script_name = config.get("script")
     if not script:
         print("ERROR: No 'script' key found in config.")
         sys.exit(1)
+
+    experiment_repo = config.get("experiment_repo")
+    script = os.path.join("/home/pi", experiment_repo, "client", script_name)
+    args = config.get("args", [])
 
     # Build command to execute
     # If script is a Python file, run it with python3

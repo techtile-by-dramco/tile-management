@@ -1,21 +1,20 @@
-# Part of the redesigned client management system
-# Run a script on the client and register the output
-# ansible-playbook -i hosts.yaml run_status.yml --extra-vars "script_path=/tmp/my_script.sh" [--limit a-single host]
 ---
 - name: Run script asynchronously and check result
   hosts: all
   gather_facts: no
   become: no
+
   vars:
     default_script_path: "/home/pi/tile-management/tiles/dummy.sh"
-    script_timeout: 3600  # max runtime in seconds
-    sudo: "{{ sudo | default(no) }}" # sudo=[yes|no]
-    sudo_flags: "{{ sudo_flags }}"
-    script_args: "{{ script_args | default('') }}"
+    script_timeout: 3600       # max runtime in seconds
 
+    # Optional vars: only use defaults if not supplied via --extra-vars
+    use_sudo: "{{ sudo | default(false) }}"
+    use_sudo_flags: "{{ sudo_flags | default('') }}"
+    use_script_args: "{{ script_args | default('') }}"
 
   tasks:
-    - name: Set script path (use extra-var if provided, otherwise default)
+    - name: Determine script_path
       ansible.builtin.set_fact:
         script_path: "{{ script_path | default(default_script_path) }}"
 
@@ -36,34 +35,35 @@
       when: script_stat.stat.exists
 
     - name: Run the script asynchronously
-      ansible.builtin.command: "{{ script_path }} {{ script_args | default('') }}"
-      become: "{{ sudo }}"
-      become_flags: "{{ sudo_flags }}"
+      ansible.builtin.command: "{{ script_path }} {{ use_script_args }}"
+      become: "{{ use_sudo }}"
+      become_flags: "{{ use_sudo_flags }}"
       async: "{{ script_timeout }}"
       poll: 0
       register: async_job
       when: script_stat.stat.exists
 
-    - name: Wait for async job to finish
+    - name: Wait for async job to finish (graceful if job file disappears)
       ansible.builtin.async_status:
         jid: "{{ async_job.ansible_job_id }}"
       register: job_result
-      until: job_result.finished
+      failed_when: false
+      changed_when: false
+      until: job_result.finished or "could not find job" in job_result.msg | default("")
       retries: "{{ (script_timeout | int) // 10 }}"
       delay: 10
       when: script_stat.stat.exists
-
+      
     - name: Fail if script result does not end with OK
       when:
         - script_stat.stat.exists
         - (job_result.stdout | trim | regex_search('OK$')) is none
-      fail:
+      ansible.builtin.fail:
         msg: "Script did NOT end with OK"
 
     - name: Success message if output ends with OK
       when:
         - script_stat.stat.exists
         - (job_result.stdout | trim | regex_search('OK$')) is not none
-      debug:
+      ansible.builtin.debug:
         msg: "Script ended with OK"
-        
