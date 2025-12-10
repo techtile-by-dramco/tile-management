@@ -1,0 +1,11 @@
+---
+- name: Reboot hosts safely
+  hosts: all
+  become: yes  # needed to reboot
+  gather_facts: no
+
+  tasks:
+    - name: Reboot the machine
+      ansible.builtin.reboot:
+        reboot_timeout: 300   # seconds to wait for host to come back
+        test_command: whoami  # optional command to verify host is back

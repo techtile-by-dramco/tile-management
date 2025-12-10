@@ -14,6 +14,24 @@ usage() {
     exit 1
 }
 
+create_working_dir() {
+    local working_dir="$1"
+
+    # Check if the directory exists
+    if [ ! -d "$working_dir" ]; then
+        echo "Directory $working_dir does not exist. Creating..."
+        mkdir -p "$working_dir"
+        if [ $? -eq 0 ]; then
+            echo "Directory created successfully."
+        else
+            echo "Failed to create directory $working_dir" >&2
+            exit 1
+        fi
+    else
+        echo "Directory $working_dir already exists."
+    fi
+}
+
 update_service_file() {
     local config_path="$1"
     local working_dir="$2"
@@ -38,6 +56,8 @@ update_service_file() {
 install_link() {
     local config_path="${1:-$DEFAULT_CONFIG}"
     local working_dir="${2:-$DEFAULT_WORKDIR}"
+
+    create_working_dir "$working_dir"
 
     update_service_file "$config_path" "$working_dir"
 
