@@ -64,7 +64,8 @@
         msg: "Script did NOT end with OK (stdout='{{ job_stdout }}')"
       when:
         - script_stat.stat.exists
-        - job_stdout is not search('OK$')
+        - job_stdout | length > 0            # only check if there is output
+        - job_stdout is not search('OK$')    # and it must end with OK
 
     - name: Success message if output ends with OK
       debug:

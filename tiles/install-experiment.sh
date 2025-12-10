@@ -61,6 +61,7 @@ install_link() {
     echo "Reloading systemd..."
     systemctl daemon-reload
     echo "OK"
+    sleep 1
 }
 
 remove_link() {
@@ -76,6 +77,7 @@ remove_link() {
     echo "Reloading systemd..."
     systemctl daemon-reload
     echo "OK"
+    sleep 1
 }
 
 # --- MAIN LOGIC ---
