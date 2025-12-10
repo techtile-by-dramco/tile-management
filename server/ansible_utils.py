@@ -93,7 +93,8 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
             inventory=inventory_path,
             extravars=extra_vars,
             limit=hosts,
-            quiet=mute_output
+            quiet=mute_output,
+            settings={"forks": 10}
         )
 
         # print playbook result
