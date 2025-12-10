@@ -53,17 +53,22 @@
       retries: "{{ (script_timeout | int) // 10 }}"
       delay: 10
       when: script_stat.stat.exists
-      
+  
+    - name: Extract stdout safely
+      set_fact:
+        job_stdout: "{{ job_result.stdout | default('') | trim }}"
+      when: script_stat.stat.exists
+
     - name: Fail if script result does not end with OK
+      fail:
+        msg: "Script did NOT end with OK (stdout='{{ job_stdout }}')"
       when:
         - script_stat.stat.exists
-        - (job_result.stdout | trim | regex_search('OK$')) is none
-      ansible.builtin.fail:
-        msg: "Script did NOT end with OK"
+        - job_stdout is not search('OK$')
 
     - name: Success message if output ends with OK
+      debug:
+        msg: "Script ended with OK"
       when:
         - script_stat.stat.exists
-        - (job_result.stdout | trim | regex_search('OK$')) is not none
-      ansible.builtin.debug:
-        msg: "Script ended with OK"
+        - job_stdout is search('OK$')

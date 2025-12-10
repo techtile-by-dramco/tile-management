@@ -25,7 +25,7 @@ def main():
         sys.exit(1)
 
     script_name = config.get("script")
-    if not script:
+    if not script_name:
         print("ERROR: No 'script' key found in config.")
         sys.exit(1)
 
