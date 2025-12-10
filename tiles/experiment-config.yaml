@@ -1,3 +1,5 @@
+# this is a dummy config file - do not use or modify!
+# instead use your own experiment-settings.yaml inside your experiment project directory
 script: "/home/pi/tile-management/tiles/dummy.py"
 args:
   - "--message"
