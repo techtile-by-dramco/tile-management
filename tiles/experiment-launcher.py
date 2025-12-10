@@ -24,7 +24,7 @@ def main():
         print(f"ERROR: Failed to read YAML: {e}")
         sys.exit(1)
 
-    script_name = config.get("script")
+    script_name = config.get("client_script_name")
     if not script_name:
         print("ERROR: No 'script' key found in config.")
         sys.exit(1)
