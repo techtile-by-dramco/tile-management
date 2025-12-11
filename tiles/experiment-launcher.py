@@ -31,7 +31,7 @@ def main():
 
     experiment_repo = config.get("experiment_repo")
     script = os.path.join("/home/pi", experiment_repo, "client", script_name)
-    args = config.get("args", [])
+    args = config.get("client_script_args", [])
 
     # Build command to execute
     # If script is a Python file, run it with python3
