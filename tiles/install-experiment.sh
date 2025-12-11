@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SERVICE_FILE="/home/pi/tile-management/tiles/experiment-launcher.service"
-TARGET_LINK="/etc/systemd/system/$(basename "$SERVICE_FILE")"
+SERVICE_NAME="experiment-launcher.service"
+SERVICE_FILE="/home/pi/tile-management/tiles/$SERVICE_NAME"
+TARGET_LINK="/etc/systemd/system/$SERVICE_NAME"
 
 DEFAULT_CONFIG="/home/pi/tile-management/tiles/experiment-config.yaml"
 DEFAULT_WORKDIR="/home/pi/tile-management"
@@ -86,8 +87,11 @@ install_link() {
 
 remove_link() {
     echo "Removing systemd service link..."
-
+    
     if [ -L "$TARGET_LINK" ]; then
+        echo "Stopping systemd service ..."
+        systemctl stop "$SERVICE_NAME"
+
         rm "$TARGET_LINK"
         echo "Removed symlink: $TARGET_LINK"
     else
