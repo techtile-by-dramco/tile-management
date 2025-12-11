@@ -71,6 +71,7 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
         return name
     
     successful_hosts = []
+    unsuccessful_hosts = []
     nr_succeeded = 0
     ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
     
@@ -107,11 +108,13 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
             if 'stdout' in event:
                 if 'ok: [' in event['stdout'] or 'changed: [' in event['stdout'] or 'skipped: [' in event['stdout']:
                     name = get_name_from_line(event['stdout'])
-                    if not name in successful_hosts:
+                    if (not name in successful_hosts) and (not name in unsuccessful_hosts):
                         successful_hosts.append(name)
                         nr_succeeded += 1
                 if 'failed: [' in event['stdout'] or 'unreachable: [' in event['stdout'] or 'ignored: [' in event['stdout']:
                     name = get_name_from_line(event['stdout'])
+                    if not name in unsuccessful_hosts:
+                        unsuccessful_hosts.append(name)
                     if name in successful_hosts: # previous task was succesful, but current task failed
                         try:
                             successful_hosts.remove(name)
@@ -134,4 +137,4 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
             shutil.rmtree(os.path.join(project_dir, "artifacts"), ignore_errors=True)
             shutil.rmtree(os.path.join(project_dir, "env"), ignore_errors=True)
 
-        return (" ".join(sorted(successful_hosts)), nr_succeeded)
+        return (nr_succeeded, " ".join(sorted(successful_hosts)), " ".join(sorted(unsuccessful_hosts)))
