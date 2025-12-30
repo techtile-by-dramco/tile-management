@@ -6,7 +6,6 @@
   vars:
     service_src_path: "{{ service_src_path }}"
     service_name: "{{ service_src_path | basename }}"
-    "
   tasks:
     - name: Create symlink in /etc/systemd/system/
       file:
