@@ -137,4 +137,4 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
             shutil.rmtree(os.path.join(project_dir, "artifacts"), ignore_errors=True)
             shutil.rmtree(os.path.join(project_dir, "env"), ignore_errors=True)
 
-        return (nr_succeeded, " ".join(sorted(successful_hosts)), " ".join(sorted(unsuccessful_hosts)))
+    return (nr_succeeded, " ".join(sorted(successful_hosts)), " ".join(sorted(unsuccessful_hosts)))
