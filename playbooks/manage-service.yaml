@@ -1,16 +1,20 @@
 ---
 - name: Manage service
   hosts: all
-  become: yes   # needed to manage systemd services
+  become: yes
   gather_facts: no
 
   vars:
     service_name: "experiment-launcher.service"
-    service_state: started   # options: started, stopped
+    service_state: started   # started or stopped
 
   tasks:
-    - name: Ensure service is in the desired state
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Ensure service is in the desired state if it exists
       ansible.builtin.systemd:
         name: "{{ service_name }}"
         state: "{{ service_state }}"
-        enabled: False
+        enabled: false
+      when: service_name in ansible_facts.services
