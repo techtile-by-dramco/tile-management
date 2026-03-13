@@ -137,7 +137,7 @@ all:
       midspan: midspan-005
       poe-port: 9
     G14:
-      ansible_hot: rpi-g14.local
+      ansible_host: rpi-g14.local
       midspan: midspan-005
       poe-port: 10
     G15:
