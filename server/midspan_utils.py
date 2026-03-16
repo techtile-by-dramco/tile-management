@@ -28,11 +28,11 @@ class midspan_support_class:
     ''' Use SNMP to retrieve the status of a specific midspan port
         midspanIP   midspan ip address (e.g. '192.168.1.2')
         portNr      port number 
-        returns     (onOff: int, portPower: int, portMaxPower: int)
+        returns     (onOff: int, portPower: int, portMaxPower: int, poeClass: int)
     '''
     def getPortStatus(self, midspanIP: str, portNr: int):
-        (onOff, portPower, portMaxPower) = asyncio.run(self.__getPortStatus(midspanIP, portNr))
-        return (onOff, portPower, portMaxPower)
+        (onOff, portPower, portMaxPower, poeClass) = asyncio.run(self.__getPortStatus(midspanIP, portNr))
+        return (onOff, portPower, portMaxPower, poeClass)
     
     
     ''' Use SNMP to enable or disable specific port on a midspan
@@ -124,7 +124,7 @@ class midspan_support_class:
                 else:
                     onOff = 0
 
-        return (onOff, powerDraw, maxPower)
+        return (onOff, powerDraw, maxPower, self.__determineClass(maxPower))
     
     
     ''' For internal use only
@@ -168,7 +168,7 @@ class midspan_support_class:
         power       maximum power reserved by the port determines the PoE class
         returns     poeClass: int (between 1 and 8)
     '''
-    def determineClass(self, power: int):
+    def __determineClass(self, power: int):
         if power < 6:
             return 1
         if power < 10:
