@@ -61,8 +61,8 @@ class midspan_support_class:
 
     def __parse_poe_response(self, var_binds):
         columns = {
-            3: "power_draw",
-            4: "max_power"
+            3: "powerDraw",
+            4: "maxPower"
         }
 
         data = {}
@@ -77,7 +77,7 @@ class midspan_support_class:
             if column in columns:
                 data[columns[column]] = int(value)
 
-        return (data.get("max_power"), data.get("power_draw"))
+        return (data.get("maxPower"), data.get("powerDraw"))
 
 
     ''' Use SNMP to retrieve the power info about a specific midspan port
@@ -185,7 +185,8 @@ class midspan_support_class:
         )
         
         onOff = -1
-        print(responses.prettyPrint())
+        powerDraw = -1
+        maxPower = -1
 
         # parse the results
         if errorIndication:
@@ -199,14 +200,14 @@ class midspan_support_class:
             if not len(responses) == 2:     # we only expect 2 responses (because we sent two commands)
                 print('ERROR: unexpected response from midspan')
             else:
-                (max_power, power_draw) = self.__parse_poe_response(responses)
+                (maxPower, powerDraw) = self.__parse_poe_response(responses)
                 
-                if power_draw > 0:
+                if powerDraw > 0:
                     onOff = 1
                 else:
                     onOff = 0
 
-        return (onOff, power_draw, max_power)
+        return (onOff, powerDraw, maxPower)
     
     
     ''' For internal use only
