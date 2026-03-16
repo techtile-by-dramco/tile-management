@@ -73,7 +73,7 @@ class midspan_support_class:
                 continue
 
             oid_parts = str(oid).split(".")
-            column = int(oid_parts[10])  # column position in this MIB
+            column = int(oid_parts[12])  # column position in this MIB
 
             if column in columns:
                 data[columns[column]] = int(value)
