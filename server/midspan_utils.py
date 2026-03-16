@@ -10,7 +10,7 @@ class midspan_support_class:
 
     __groupNr = 1                                           # fixed - don't change
     __portPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.3'		# POE-PRIVATE-MIB.portConsumptionPower
-    __portMaxPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.4'     # POE-PRIVATE-MIB.portmAXPower
+    __portMaxPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.4'     # POE-PRIVATE-MIB.portMaxPower
 
     ''' Constructor
         user        login for the SNMPv3 interface
@@ -153,6 +153,8 @@ class midspan_support_class:
 
         # Build object types
         objs = [
+            ObjectType(ObjectIdentity('.1.3.6.1.4.1.7428.1.2.1.1.1.1.' + str(self.__groupNr) + '.' + str(portNr))),
+            ObjectType(ObjectIdentity('.1.3.6.1.4.1.7428.1.2.1.1.1.2.' + str(self.__groupNr) + '.' + str(portNr)))
             ObjectType(ObjectIdentity(self.__portMaxPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr))),
             ObjectType(ObjectIdentity(self.__portPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr)))
         ]
@@ -187,6 +189,9 @@ class midspan_support_class:
             if not len(responses) == 2:     # we only expect 2 responses (because we sent two commands)
                 print('ERROR: unexpected response from midspan')
             else:
+                print("RESPONSES:")
+                print(responses)
+                                
                 # port action
                 action = responses[0][1].prettyPrint()
                 
