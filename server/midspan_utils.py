@@ -2,7 +2,6 @@ import asyncio
 from pysnmp import debug
 from pysnmp.hlapi.asyncio import *
 
-
 ''' Support class for interfacing with the PD-9624GC and PD-9612GC midspans of
     the techtile infrastructure.
 '''
@@ -41,10 +40,8 @@ class midspan_support_class:
         returns     result of the action
     '''
     def setPortOnOff(self, midspanIP: str, portNr: int, onOff: int):
-        if onOff == 1:
-            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, 'true'))
-        elif onOff == 0:
-            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, 'false'))
+        if onOff == 1 or onOff == 0:
+            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, onOff))
         else:
             return -1
         
@@ -130,7 +127,7 @@ class midspan_support_class:
     ''' For internal use only
         onOff argument is passed as either 'true' or 'false'
     '''
-    async def __setPortOnOff(self, midspanIP: str, portNr: int, onOff: str):
+    async def __setPortOnOff(self, midspanIP: str, portNr: int, onOff: int):
         engine = SnmpEngine()
         loginData = UsmUserData(
             self.__SNMPv3User,
