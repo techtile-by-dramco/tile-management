@@ -141,7 +141,7 @@ class midspan_support_class:
 
         # Build object types
         objs = [
-            ObjectType(ObjectIdentity('POWER-ETHERNET-MIB', 'pethPsePortAdminEnable', self.__groupNr, portNr), onOff)
+            ObjectType(ObjectIdentity('.1.3.6.1.2.1.105.1.1.1.3.' + str(onOff) + '.' + str(portNr)))
         ]
 
         # Perform SNMP SET asynchronously
