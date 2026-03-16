@@ -37,7 +37,7 @@ class midspan_support_class:
         ]
 
         # Perform SNMP GET asynchronously
-        errorIndication, errorStatus, errorIndex, responses = await getCmd(
+        errorIndication, errorStatus, errorIndex, responses = await get_cmd(
             engine,
             loginData,
             transport,
@@ -82,7 +82,7 @@ class midspan_support_class:
         loginData = self.__SNMPv3LoginData
 
         # build iterator for processing SNMP commands
-        iterator = getCmd(
+        iterator = get_cmd(
             SnmpEngine(),
             UsmUserData(*loginData),
             UdpTransportTarget((midspanIp, 161)),
@@ -145,7 +145,7 @@ class midspan_support_class:
         ]
 
         # Perform SNMP GET asynchronously
-        errorIndication, errorStatus, errorIndex, responses = await getCmd(
+        errorIndication, errorStatus, errorIndex, responses = await get_cmd(
             engine,
             loginData,
             transport,
@@ -183,7 +183,7 @@ class midspan_support_class:
         loginData = self.__SNMPv3LoginData
 
         # build iterator for processing SNMP commands
-        iterator = getCmd(
+        iterator = get_cmd(
             SnmpEngine(),
             UsmUserData(*loginData),
             UdpTransportTarget((midspanIP, 161)),
