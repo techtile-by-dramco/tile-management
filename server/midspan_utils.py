@@ -59,7 +59,7 @@ class midspan_support_class:
             return -1
         
 
-    def __parse_poe_response(var_binds):
+    def __parse_poe_response(self, var_binds):
         columns = {
             3: "power_draw",
             4: "max_power"
