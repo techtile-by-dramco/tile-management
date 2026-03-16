@@ -1,5 +1,5 @@
 import asyncio
-from pysnmp.hlapi.asyncio import *
+from pysnmp.hlapi import *
 
 ''' Support class for interfacing with the PD-9624GC and PD-9612GC midspans of
     the techtile infrastructure.
