@@ -16,7 +16,7 @@ class midspan_support_class:
     '''
     def __init__(self, user: str, passKey: str):
         self.__SNMPv3LoginData = (user, passKey, passKey)
-        debug.setLogger(debug.Debug('all'))
+        #debug.setLogger(debug.Debug('all'))
 
 
     ''' Use SNMP to retrieve the power info about a specific midspan port
