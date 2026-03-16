@@ -28,7 +28,7 @@ class midspan_support_class:
     ''' Use SNMP to retrieve the status of a specific midspan port
         midspanIP   midspan ip address (e.g. '192.168.1.2')
         portNr      port number 
-        returns     (onOff: int, portAction: str)
+        returns     (onOff: int, portPower: int, portMaxPower: int)
     '''
     def getPortStatus(self, midspanIP: str, portNr: int):
         (onOff, action) = asyncio.run(self.__getPortStatus(midspanIP, portNr))
@@ -68,7 +68,6 @@ class midspan_support_class:
         data = {}
 
         for oid, value in var_binds:
-            print("OID:", oid)
             if value.__class__.__name__ == "NoSuchObject":
                 continue
 
@@ -78,7 +77,6 @@ class midspan_support_class:
             if column in columns:
                 data[columns[column]] = int(value)
 
-        print(data)
         return (data.get("max_power"), data.get("power_draw"))
 
 
@@ -156,9 +154,6 @@ class midspan_support_class:
 
 
     ''' Use SNMP to retrieve the status of a specific midspan port
-        midspanIP   midspan ip address (e.g. '192.168.1.2')
-        portNr      port number 
-        returns     (onOff: int, portAction: str)
         
         Don't use directly. Use getPortStatus(...) instead.
     '''
@@ -190,7 +185,7 @@ class midspan_support_class:
         )
         
         onOff = -1
-        action = "SNMP Error"
+        print(responses.prettyPrint())
 
         # parse the results
         if errorIndication:
@@ -211,7 +206,7 @@ class midspan_support_class:
                 else:
                     onOff = 0
 
-        return (onOff, action)
+        return (onOff, power_draw, max_power)
     
     
     ''' For internal use only
