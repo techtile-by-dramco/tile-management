@@ -92,6 +92,12 @@ class midspan_support_class:
             context,
             *objs
         )
+        
+        print("======== SNMP INFO =================")
+        print(errorIndication)
+        print(errorStatus)
+        print(errorIndex)
+        print(responses)
 
         power = -1
         maxPower = -1
