@@ -154,7 +154,7 @@ class midspan_support_class:
         # Build object types
         objs = [
             ObjectType(ObjectIdentity('.1.3.6.1.4.1.7428.1.2.1.1.1.1.' + str(self.__groupNr) + '.' + str(portNr))),
-            ObjectType(ObjectIdentity('.1.3.6.1.4.1.7428.1.2.1.1.1.2.' + str(self.__groupNr) + '.' + str(portNr)))
+            ObjectType(ObjectIdentity('.1.3.6.1.4.1.7428.1.2.1.1.1.2.' + str(self.__groupNr) + '.' + str(portNr))),
             ObjectType(ObjectIdentity(self.__portMaxPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr))),
             ObjectType(ObjectIdentity(self.__portPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr)))
         ]
