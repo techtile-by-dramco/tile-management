@@ -132,7 +132,7 @@ class midspan_support_class:
         portNr      port number 
         returns     (onOff: int, portAction: str)
     '''
-    async def getPortStatus(self, midspanIP: str, portNr: int):
+    async def _getPortStatus(self, midspanIP: str, portNr: int):
         engine = SnmpEngine()
         loginData = self.__SNMPv3LoginData
         transport = UdpTransportTarget((midspan_ip, 161))
@@ -221,6 +221,11 @@ class midspan_support_class:
 
         return (onOff, action)
 
+    
+    def getPortStatus(self, midspanIP: str, portNr: int):
+        (onOff, action) = asyncio.run(self._getPortStatus(midspanIP, portNr))
+        return (onOff, action)
+        
 
     ''' Use SNMP to enable or disable specific port on a midspan
         midspanIP   midspan ip address (e.g. '192.168.1.2')
