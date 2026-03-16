@@ -1,5 +1,5 @@
 import asyncio
-from pysnmp.hlapi import *
+from pysnmp.hlapi.asyncio import *
 
 ''' Support class for interfacing with the PD-9624GC and PD-9612GC midspans of
     the techtile infrastructure.
@@ -26,7 +26,12 @@ class midspan_support_class:
     '''
     async def getPortPower(self, midspanIP: str, port_nr: str):
         engine = SnmpEngine()
-        loginData = self.__SNMPv3LoginData
+        loginData = UsmUserData(
+            self.__SNMPv3LoginData,
+            authProtocol=usmHMACSHAAuthProtocol,
+            privProtocol=usmAesCfb128Protocol
+        )
+
         transport = await UdpTransportTarget.create((midspanIP, 161))
         context = ContextData()
 
@@ -134,7 +139,11 @@ class midspan_support_class:
     '''
     async def _getPortStatus(self, midspanIP: str, portNr: int):
         engine = SnmpEngine()
-        loginData = self.__SNMPv3LoginData
+        loginData = UsmUserData(
+            self.__SNMPv3LoginData,
+            authProtocol=usmHMACSHAAuthProtocol,
+            privProtocol=usmAesCfb128Protocol
+        )
         transport = await UdpTransportTarget.create((midspanIP, 161))
         context = ContextData()
 
