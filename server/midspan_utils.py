@@ -68,6 +68,7 @@ class midspan_support_class:
         data = {}
 
         for oid, value in var_binds:
+            print("OID:", oid)
             if value.__class__.__name__ == "NoSuchObject":
                 continue
 
@@ -77,6 +78,7 @@ class midspan_support_class:
             if column in columns:
                 data[columns[column]] = int(value)
 
+        print(data)
         return (data.get("max_power"), data.get("power_draw"))
 
 
