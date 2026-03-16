@@ -1,5 +1,7 @@
 import asyncio
+from pysnmp import debug
 from pysnmp.hlapi.asyncio import *
+
 
 ''' Support class for interfacing with the PD-9624GC and PD-9612GC midspans of
     the techtile infrastructure.
@@ -18,7 +20,9 @@ class midspan_support_class:
         self.__SNMPv3User = user
         self.__SNMPv3AuthKey = passKey
         self.__SNMPv3PrivKey = passKey
-        #debug.setLogger(debug.Debug('all'))
+        debug.set_logger(
+            debug.Debug('io', 'msgproc', 'secmod', 'dsp', 'mibbuild')
+        )
 
 
     ''' Use SNMP to retrieve the power info about a specific midspan port
