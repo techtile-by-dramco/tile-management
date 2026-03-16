@@ -24,10 +24,10 @@ class midspan_support_class:
         portNr      port number
         returns     (power: int, maxPower: int, poeClass: str)
     '''
-    async def getPortPower(self, midspan_ip: str, port_nr: str):
+    async def getPortPower(self, midspanIP: str, port_nr: str):
         engine = SnmpEngine()
         loginData = self.__SNMPv3LoginData
-        transport = UdpTransportTarget((midspan_ip, 161))
+        transport = UdpTransportTarget((midspanIP, 161))
         context = ContextData()
 
         # Build object types
@@ -135,7 +135,7 @@ class midspan_support_class:
     async def _getPortStatus(self, midspanIP: str, portNr: int):
         engine = SnmpEngine()
         loginData = self.__SNMPv3LoginData
-        transport = UdpTransportTarget((midspan_ip, 161))
+        transport = UdpTransportTarget((midspanIP, 161))
         context = ContextData()
 
         # Build object types
