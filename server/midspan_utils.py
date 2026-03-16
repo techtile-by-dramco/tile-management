@@ -151,10 +151,10 @@ class midspan_support_class:
             self.__SNMPv3User,
             self.__SNMPv3AuthKey,
             self.__SNMPv3PrivKey,
-            authProtocol=usmHMACSHAAuthProtocol,
-            privProtocol=usmAesCfb128Protocol
+            authProtocol=usmHMACMD5AuthProtocol,
+            privProtocol=usmDESPrivProtocol
         )
-        transport = await UdpTransportTarget.create((midspanIP, 161),timeout=5, retries=3)
+        transport = await UdpTransportTarget.create((midspanIP, 161), timeout=5, retries=3)
         context = ContextData()
 
         # Build object types
@@ -171,12 +171,6 @@ class midspan_support_class:
             context,
             *objs
         )
-
-        print("=============== SNMP INFO =====================")
-        print("errorIndication:", errorIndication)
-        print("errorStatus:", errorStatus)
-        print("errorIndex:", errorIndex)
-        print("varBinds:", responses)
 
         onOff = -1
         action = "SNMP Error"
