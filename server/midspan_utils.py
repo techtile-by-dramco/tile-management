@@ -15,7 +15,9 @@ class midspan_support_class:
         passKey     login passward for the SNMPv3 interface
     '''
     def __init__(self, user: str, passKey: str):
-        self.__SNMPv3LoginData = (user, passKey, passKey)
+        self.__SNMPv3User = user
+        self.__SNMPv3AuthKey = passKey
+        self.__SNMPv3PrivKey = passKey
         #debug.setLogger(debug.Debug('all'))
 
 
@@ -27,7 +29,9 @@ class midspan_support_class:
     async def getPortPower(self, midspanIP: str, port_nr: str):
         engine = SnmpEngine()
         loginData = UsmUserData(
-            self.__SNMPv3LoginData,
+            self.__SNMPv3User,
+            self.__SNMPv3AuthKey,
+            self.__SNMPv3PrivKey,
             authProtocol=usmHMACSHAAuthProtocol,
             privProtocol=usmAesCfb128Protocol
         )
@@ -140,7 +144,9 @@ class midspan_support_class:
     async def _getPortStatus(self, midspanIP: str, portNr: int):
         engine = SnmpEngine()
         loginData = UsmUserData(
-            self.__SNMPv3LoginData,
+            self.__SNMPv3User,
+            self.__SNMPv3AuthKey,
+            self.__SNMPv3PrivKey,
             authProtocol=usmHMACSHAAuthProtocol,
             privProtocol=usmAesCfb128Protocol
         )
