@@ -132,7 +132,54 @@ class midspan_support_class:
         portNr      port number 
         returns     (onOff: int, portAction: str)
     '''
-    def getPortStatus(self, midspanIP: str, portNr: int):
+    async def getPortStatus(self, midspanIP: str, portNr: int):
+        engine = SnmpEngine()
+        loginData = self.__SNMPv3LoginData
+        transport = UdpTransportTarget((midspan_ip, 161))
+        context = ContextData()
+
+        # Build object types
+        objs = [
+            ObjectType(ObjectIdentity(self.__portMaxPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr))),
+            ObjectType(ObjectIdentity(self.__portPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr)))
+        ]
+
+        # Perform SNMP GET asynchronously
+        errorIndication, errorStatus, errorIndex, responses = await getCmd(
+            engine,
+            loginData,
+            transport,
+            context,
+            *objs
+        )
+
+        onOff = -1
+        action = "SNMP Error"
+
+        # parse the results
+        if errorIndication:
+            print(errorIndication)
+
+        elif errorStatus:
+            print('%s at %s' % (errorStatus.prettyPrint(),
+                                errorIndex and responses[int(errorIndex) - 1][0] or '?'))
+
+        else: # we got a valid response
+            if not len(responses) == 2:     # we only expect 2 responses (because we sent two commands)
+                print('ERROR: unexpected response from midspan')
+            else:
+                # port action
+                action = responses[0][1].prettyPrint()
+                
+                # port on/off
+                if responses[1][1].prettyPrint() == 'true':
+                    onOff = 1
+                else:
+                    onOff = 0
+
+        return (onOff, action)
+
+    def getPortStatusOld(self, midspanIP: str, portNr: int):
         loginData = self.__SNMPv3LoginData
 
         # build iterator for processing SNMP commands
