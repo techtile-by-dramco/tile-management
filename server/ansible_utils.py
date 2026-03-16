@@ -121,7 +121,9 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
                             nr_succeeded -= 1
                         except ValueError as e:
                             print("Could not remove", name, "from the list with successful hosts, but it failed")
-
+    except KeyboardInterrupt:
+        print("Execution interrupted by user.")
+        raise
     except FileNotFoundError as e:
         print(f"File not found: {e}")
         raise
