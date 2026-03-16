@@ -114,7 +114,7 @@ class midspan_support_class:
                                 errorIndex and responses[int(errorIndex) - 1][0] or '?'))
 
         else: # we got a valid response
-            if not len(responses) == 2:     # we only expect 2 responses (because we sent two commands)
+            if not len(responses) == 2:     # we only expect 2 responses (because we've sent 2 commands)
                 print('ERROR: unexpected response from midspan')
             else:
                 (maxPower, powerDraw) = self.__parse_poe_response(responses)
@@ -131,18 +131,30 @@ class midspan_support_class:
         onOff argument is passed as either 'true' or 'false'
     '''
     def __setPortOnOff(self, midspanIP: str, portNr: int, onOff: str):
-        loginData = self.__SNMPv3LoginData
-
-        # build iterator for processing SNMP commands
-        iterator = setCmd(
-            SnmpEngine(),
-            UsmUserData(*loginData),
-            UdpTransportTarget((midspanIP, 161)),
-            ContextData(),
-            ObjectType(ObjectIdentity('POWER-ETHERNET-MIB', 'pethPsePortAdminEnable', self.__groupNr, portNr), onOff),
+        engine = SnmpEngine()
+        loginData = UsmUserData(
+            self.__SNMPv3User,
+            self.__SNMPv3AuthKey,
+            self.__SNMPv3PrivKey,
+            authProtocol=usmHMACMD5AuthProtocol,
+            privProtocol=usmDESPrivProtocol
         )
+        transport = await UdpTransportTarget.create((midspanIP, 161), timeout=5, retries=3)
+        context = ContextData()
 
-        errorIndication, errorStatus, errorIndex, responses = next(iterator)
+        # Build object types
+        objs = [
+            ObjectType(ObjectIdentity('POWER-ETHERNET-MIB', 'pethPsePortAdminEnable', self.__groupNr, portNr), onOff)
+        ]
+
+        # Perform SNMP SET asynchronously
+        errorIndication, errorStatus, errorIndex, responses = await set_cmd(
+            engine,
+            loginData,
+            transport,
+            context,
+            *objs
+        )
 
         if errorIndication:
             print(errorIndication)
@@ -154,7 +166,7 @@ class midspan_support_class:
             return -1
 
         else:   # we got a valid response
-            if not len(responses) == 1:     # we only expect 1 response (because we sent two commands)
+            if not len(responses) == 1:     # we only expect 1 response (because we've sent 1 command)
                 print('ERROR: unexpected response from midspan')
             else:
                 # port on/off
