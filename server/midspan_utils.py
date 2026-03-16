@@ -165,7 +165,13 @@ class midspan_support_class:
             context,
             *objs
         )
-
+        
+        print("======== SNMP INFO =================")
+        print(errorIndication)
+        print(errorStatus)
+        print(errorIndex)
+        print(responses)
+        
         onOff = -1
         action = "SNMP Error"
 
