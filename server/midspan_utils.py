@@ -42,9 +42,9 @@ class midspan_support_class:
     '''
     def setPortOnOff(self, midspanIP: str, portNr: int, onOff: int):
         if onOff == 1:
-            return self.__setPortOnOff(midspanIP, portNr, 'true')
+            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, 'true'))
         elif onOff == 0:
-            return self.__setPortOnOff(midspanIP, portNr, 'false')
+            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, 'false'))
         else:
             return -1
         
