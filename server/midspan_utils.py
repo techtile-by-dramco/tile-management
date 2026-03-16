@@ -141,7 +141,7 @@ class midspan_support_class:
 
         # Build object types
         objs = [
-            ObjectType(ObjectIdentity('.1.3.6.1.2.1.105.1.1.1.3.' + str(onOff) + '.' + str(portNr)))
+            ObjectType(ObjectIdentity('.1.3.6.1.2.1.105.1.1.1.3.' + str(onOff) + '.' + str(portNr)), Integer(onOff))
         ]
 
         # Perform SNMP SET asynchronously
