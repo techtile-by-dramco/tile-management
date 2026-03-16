@@ -20,27 +20,62 @@ class midspan_support_class:
         self.__SNMPv3User = user
         self.__SNMPv3AuthKey = passKey
         self.__SNMPv3PrivKey = passKey
-        debug.set_logger(
-            debug.Debug('io', 'msgproc', 'secmod', 'dsp', 'mibbuild')
-        )
+        #debug.set_logger(
+        #    debug.Debug('io', 'msgproc', 'secmod', 'dsp', 'mibbuild')
+        #)
 
+
+    ''' Use SNMP to retrieve the status of a specific midspan port
+        midspanIP   midspan ip address (e.g. '192.168.1.2')
+        portNr      port number 
+        returns     (onOff: int, portAction: str)
+    '''
+    def getPortStatus(self, midspanIP: str, portNr: int):
+        (onOff, action) = asyncio.run(self.__getPortStatus(midspanIP, portNr))
+        return (onOff, action)
+        
 
     ''' Use SNMP to retrieve the power info about a specific midspan port
         midspanIP   midspan ip address (e.g. '192.168.1.2')
         portNr      port number
         returns     (power: int, maxPower: int, poeClass: str)
     '''
-    async def getPortPower(self, midspanIP: str, port_nr: str):
+    def getPortPower(self, midspanIP: str, portNr: int):
+        (power, maxPower, poeClass) = asyncio.run(self.__getPortPower(midspanIP, portNr))
+        return (power, maxPower, poeClass)
+    
+    
+    ''' Use SNMP to enable or disable specific port on a midspan
+        midspanIP   midspan ip address (e.g. '192.168.1.2')
+        portNr      port number 
+        returns     result of the action
+    '''
+    def setPortOnOff(self, midspanIP: str, portNr: int, onOff: int):
+        if onOff == 1:
+            return self.__setPortOnOff(midspanIP, portNr, 'true')
+        elif onOff == 0:
+            return self.__setPortOnOff(midspanIP, portNr, 'false')
+        else:
+            return -1
+        
+
+    ''' Use SNMP to retrieve the power info about a specific midspan port
+        midspanIP   midspan ip address (e.g. '192.168.1.2')
+        portNr      port number
+        returns     (power: int, maxPower: int, poeClass: str)
+        
+        Don't use directly. Use getPortPower(...) instead.
+    '''
+    async def __getPortPower(self, midspanIP: str, portNr: str):
         engine = SnmpEngine()
         loginData = UsmUserData(
             self.__SNMPv3User,
             self.__SNMPv3AuthKey,
             self.__SNMPv3PrivKey,
-            authProtocol=usmHMACSHAAuthProtocol,
-            privProtocol=usmAesCfb128Protocol
+            authProtocol=usmHMACMD5AuthProtocol,
+            privProtocol=usmDESPrivProtocol
         )
-
-        transport = await UdpTransportTarget.create((midspanIP, 161))
+        transport = await UdpTransportTarget.create((midspanIP, 161), timeout=5, retries=3)
         context = ContextData()
 
         # Build object types
@@ -89,61 +124,14 @@ class midspan_support_class:
                     power = -1
         
         return (power, maxPower, poeClass)
-    
-    
-    def getPortPowerOld(self, midspanIp: str, portNr: int):
-        loginData = self.__SNMPv3LoginData
-
-        # build iterator for processing SNMP commands
-        iterator = get_cmd(
-            SnmpEngine(),
-            UsmUserData(*loginData),
-            UdpTransportTarget((midspanIp, 161)),
-            ContextData(),
-            ObjectType(ObjectIdentity(self.__portMaxPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr))),
-            ObjectType(ObjectIdentity(self.__portPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr)))
-        )
-
-        # "run" the command
-        errorIndication, errorStatus, errorIndex, responses = next(iterator)
-        
-        power = -1
-        maxPower = -1
-        poeClass = ''
-        
-        # parse the results
-        if errorIndication:
-            print(errorIndication)
-
-        elif errorStatus:
-            print('%s at %s' % (errorStatus.prettyPrint(),
-                                errorIndex and responses[int(errorIndex) - 1][0] or '?'))
-
-        else: # we got a valid response
-            if not len(responses) == 2:     # we only expect 2 responses (because we sent two commands)
-                print('ERROR: unexpected response from midspan')
-            else:
-                # port maximum power (as integer) and power class
-                try:
-                    maxPower = int(responses[0][1].prettyPrint())
-                    poeClass = 'class ' + str(self.__determineClass(maxPower))
-                except ValueError:
-                    maxPower = -1
-                    poeClass = 'class unknown'
-                
-                # port power (as integer)
-                try:
-                    power = int(responses[1][1].prettyPrint())
-                except ValueError:
-                    power = -1
-        
-        return (power, maxPower, poeClass)
 
 
     ''' Use SNMP to retrieve the status of a specific midspan port
         midspanIP   midspan ip address (e.g. '192.168.1.2')
         portNr      port number 
         returns     (onOff: int, portAction: str)
+        
+        Don't use directly. Use getPortStatus(...) instead.
     '''
     async def __getPortStatus(self, midspanIP: str, portNr: int):
         engine = SnmpEngine()
@@ -197,69 +185,8 @@ class midspan_support_class:
                     onOff = 0
 
         return (onOff, action)
-
-    def getPortStatusOld(self, midspanIP: str, portNr: int):
-        loginData = self.__SNMPv3LoginData
-
-        # build iterator for processing SNMP commands
-        iterator = get_cmd(
-            SnmpEngine(),
-            UsmUserData(*loginData),
-            UdpTransportTarget((midspanIP, 161)),
-            ContextData(),
-		    ObjectType(ObjectIdentity('POWER-ETHERNET-MIB', 'pethPsePortDetectionStatus', self.__groupNr, portNr)),
-            ObjectType(ObjectIdentity('POWER-ETHERNET-MIB', 'pethPsePortAdminEnable', self.__groupNr, portNr)),
-        )
-
-        # "run" the command
-        errorIndication, errorStatus, errorIndex, responses = next(iterator)
-
-        onOff = -1
-        action = "SNMP Error"
-
-        # parse the results
-        if errorIndication:
-            print(errorIndication)
-
-        elif errorStatus:
-            print('%s at %s' % (errorStatus.prettyPrint(),
-                                errorIndex and responses[int(errorIndex) - 1][0] or '?'))
-
-        else: # we got a valid response
-            if not len(responses) == 2:     # we only expect 2 responses (because we sent two commands)
-                print('ERROR: unexpected response from midspan')
-            else:
-                # port action
-                action = responses[0][1].prettyPrint()
-                
-                # port on/off
-                if responses[1][1].prettyPrint() == 'true':
-                    onOff = 1
-                else:
-                    onOff = 0
-
-        return (onOff, action)
-
     
-    def getPortStatus(self, midspanIP: str, portNr: int):
-        (onOff, action) = asyncio.run(self.__getPortStatus(midspanIP, portNr))
-        return (onOff, action)
-        
-
-    ''' Use SNMP to enable or disable specific port on a midspan
-        midspanIP   midspan ip address (e.g. '192.168.1.2')
-        portNr      port number 
-        returns     result of the action
-    '''
-    def setPortOnOff(self, midspanIP: str, portNr: int, onOff: int):
-        if onOff == 1:
-            return self.__setPortOnOff(midspanIP, portNr, 'true')
-        elif onOff == 0:
-            return self.__setPortOnOff(midspanIP, portNr, 'false')
-        else:
-            return -1
-
-
+    
     ''' For internal use only
         onOff argument is passed as either 'true' or 'false'
     '''
