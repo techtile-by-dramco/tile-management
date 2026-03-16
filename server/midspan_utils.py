@@ -130,7 +130,7 @@ class midspan_support_class:
     ''' For internal use only
         onOff argument is passed as either 'true' or 'false'
     '''
-    def __setPortOnOff(self, midspanIP: str, portNr: int, onOff: str):
+    async def __setPortOnOff(self, midspanIP: str, portNr: int, onOff: str):
         engine = SnmpEngine()
         loginData = UsmUserData(
             self.__SNMPv3User,
