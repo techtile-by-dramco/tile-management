@@ -141,7 +141,7 @@ class midspan_support_class:
         portNr      port number 
         returns     (onOff: int, portAction: str)
     '''
-    async def _getPortStatus(self, midspanIP: str, portNr: int):
+    async def __getPortStatus(self, midspanIP: str, portNr: int):
         engine = SnmpEngine()
         loginData = UsmUserData(
             self.__SNMPv3User,
@@ -150,7 +150,7 @@ class midspan_support_class:
             authProtocol=usmHMACSHAAuthProtocol,
             privProtocol=usmAesCfb128Protocol
         )
-        transport = await UdpTransportTarget.create((midspanIP, 161))
+        transport = await UdpTransportTarget.create((midspanIP, 161),timeout=5, retries=3)
         context = ContextData()
 
         # Build object types
@@ -167,6 +167,12 @@ class midspan_support_class:
             context,
             *objs
         )
+
+        print("=============== SNMP INFO =====================")
+        print("errorIndication:", errorIndication)
+        print("errorStatus:", errorStatus)
+        print("errorIndex:", errorIndex)
+        print("varBinds:", responses)
 
         onOff = -1
         action = "SNMP Error"
@@ -238,7 +244,7 @@ class midspan_support_class:
 
     
     def getPortStatus(self, midspanIP: str, portNr: int):
-        (onOff, action) = asyncio.run(self._getPortStatus(midspanIP, portNr))
+        (onOff, action) = asyncio.run(self.__getPortStatus(midspanIP, portNr))
         return (onOff, action)
         
 
