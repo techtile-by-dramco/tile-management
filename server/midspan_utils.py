@@ -59,7 +59,7 @@ class midspan_support_class:
             return -1
         
 
-    def parse_poe_response(var_binds):
+    def __parse_poe_response(var_binds):
         columns = {
             3: "power_draw",
             4: "max_power"
@@ -202,7 +202,7 @@ class midspan_support_class:
             if not len(responses) == 2:     # we only expect 2 responses (because we sent two commands)
                 print('ERROR: unexpected response from midspan')
             else:
-                (max_power, power_draw) = parse_poe_response(responses)
+                (max_power, power_draw) = self.__parse_poe_response(responses)
                 
                 if power_draw > 0:
                     onOff = 1
