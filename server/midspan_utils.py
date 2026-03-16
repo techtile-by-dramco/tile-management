@@ -59,6 +59,27 @@ class midspan_support_class:
             return -1
         
 
+    def parse_poe_response(var_binds):
+        columns = {
+            3: "power_draw",
+            4: "max_power"
+        }
+
+        data = {}
+
+        for oid, value in var_binds:
+            if value.__class__.__name__ == "NoSuchObject":
+                continue
+
+            oid_parts = str(oid).split(".")
+            column = int(oid_parts[10])  # column position in this MIB
+
+            if column in columns:
+                data[columns[column]] = int(value)
+
+        return (data.get("max_power"), data.get("power_draw"))
+
+
     ''' Use SNMP to retrieve the power info about a specific midspan port
         midspanIP   midspan ip address (e.g. '192.168.1.2')
         portNr      port number
@@ -153,8 +174,6 @@ class midspan_support_class:
 
         # Build object types
         objs = [
-            ObjectType(ObjectIdentity('.1.3.6.1.4.1.7428.1.2.1.1.1.1.' + str(self.__groupNr) + '.' + str(portNr))),
-            ObjectType(ObjectIdentity('.1.3.6.1.4.1.7428.1.2.1.1.1.2.' + str(self.__groupNr) + '.' + str(portNr))),
             ObjectType(ObjectIdentity(self.__portMaxPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr))),
             ObjectType(ObjectIdentity(self.__portPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr)))
         ]
@@ -167,12 +186,6 @@ class midspan_support_class:
             context,
             *objs
         )
-        
-        print("======== SNMP INFO =================")
-        print(errorIndication)
-        print(errorStatus)
-        print(errorIndex)
-        print(responses)
         
         onOff = -1
         action = "SNMP Error"
@@ -189,14 +202,9 @@ class midspan_support_class:
             if not len(responses) == 2:     # we only expect 2 responses (because we sent two commands)
                 print('ERROR: unexpected response from midspan')
             else:
-                print("RESPONSES:")
-                print(responses)
-                                
-                # port action
-                action = responses[0][1].prettyPrint()
+                (max_power, power_draw) = parse_poe_response(responses)
                 
-                # port on/off
-                if responses[1][1].prettyPrint() == 'true':
+                if power_draw > 0:
                     onOff = 1
                 else:
                     onOff = 0
