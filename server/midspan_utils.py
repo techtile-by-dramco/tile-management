@@ -79,7 +79,7 @@ class midspan_support_class:
     
 
     async def __safeSetPortOnOff(self, midspanIP, portNr, onOff: int):
-        async with self.__sem:
+        async with midspan_support_class.__sem: # don't use self.__sem!
             return await self.__setPortOnOff(midspanIP, portNr, onOff)
 
 
