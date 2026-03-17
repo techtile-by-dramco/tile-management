@@ -191,7 +191,7 @@ all:
     F07:
       ansible_host: rpi-f07.local
       midspan: midspan-004
-      poe-port: 16
+      poe-port: 19
     F08:
       ansible_host: rpi-f08.local
       midspan: midspan-004
