@@ -58,6 +58,8 @@ class midspan_support_class:
         if isinstance(host, str):
             host = [host]  # wrap single string in a list
             
+        print(self.setPortOnOff)
+        print(host)
         results = asyncio.run(self.__setPortOnOffAsync(host, onOff))
         return results
     
@@ -65,7 +67,6 @@ class midspan_support_class:
     async def __setPortOnOffAsync(self, host: list[str], onOff: int):
         tasks = []
         for h in host:
-            print("Applying changes ", end="", flush=True) 
             (midspanIP, portNr) = self.__get_poe_info(h)
             if onOff == midspan_support_class.ON:
                 tasks.append(self.__safeSetPortOnOff(midspanIP, portNr, midspan_support_class.__ON))
@@ -74,6 +75,7 @@ class midspan_support_class:
             else:
                 return -1
         
+        print(tasks)
         results = await asyncio.gather(*tasks)
         return results
     
