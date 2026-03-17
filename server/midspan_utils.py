@@ -28,14 +28,13 @@ class midspan_support_class:
         self.__SNMPv3User = user
         self.__SNMPv3AuthKey = passKey
         self.__SNMPv3PrivKey = passKey
-        #debug.set_logger(
-        #    debug.Debug('io', 'msgproc', 'secmod', 'dsp', 'mibbuild')
-        #)
+        
         baseDir = Path(__file__).resolve().parent.parent
         inventoryFile = baseDir / "inventory/hosts.yaml"    
         with open(inventoryFile) as f:
             self.__inventory = yaml.safe_load(f)
 
+        self.__sem = asyncio.Semaphore(8)
 
     ''' Use SNMP to retrieve the status of a specific midspan port
         midspanIP   midspan ip address (e.g. '192.168.1.2')
@@ -58,7 +57,6 @@ class midspan_support_class:
         if isinstance(host, str):
             host = [host]  # wrap single string in a list
             
-        print(self.setPortOnOff)
         print(host)
         results = asyncio.run(self.__setPortOnOffAsync(host, onOff))
         return results
@@ -81,9 +79,8 @@ class midspan_support_class:
     
 
     async def __safeSetPortOnOff(self, midspanIP, portNr, onOff: int):
-        sem = asyncio.Semaphore(8)
-        async with sem:
-            return await self.__setPortOnOff(midspanIP, portNr, midspan_support_class.__ON)
+        async with self.__sem:
+            return await self.__setPortOnOff(midspanIP, portNr, onOff)
 
 
     def __parse_poe_response(self, var_binds):
