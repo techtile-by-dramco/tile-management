@@ -1,6 +1,8 @@
 import asyncio
 from pysnmp import debug
 from pysnmp.hlapi.asyncio import *
+from pathlib import Path
+
 
 ''' Support class for interfacing with the PD-9624GC and PD-9612GC midspans of
     the techtile infrastructure.
@@ -22,6 +24,9 @@ class midspan_support_class:
         #debug.set_logger(
         #    debug.Debug('io', 'msgproc', 'secmod', 'dsp', 'mibbuild')
         #)
+        BASE_DIR = Path(__file__).resolve().parent
+        inventory_file = BASE_DIR / "inventory/host.yaml"
+        print(inventory_file)
 
 
     ''' Use SNMP to retrieve the status of a specific midspan port
