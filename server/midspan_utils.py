@@ -3,7 +3,6 @@ from pysnmp import debug
 from pysnmp.hlapi.asyncio import *
 from pathlib import Path
 import yaml
-import time
 
 
 ''' Support class for interfacing with the PD-9624GC and PD-9612GC midspans of
@@ -58,12 +57,8 @@ class midspan_support_class:
         if isinstance(host, str):
             host = [host]  # wrap single string in a list
             
-        print("Applying changes ", end="", flush=True)
+        print(host)
         results = asyncio.run(self.__setPortOnOffAsync(host, onOff))
-        for i in range(4):
-            print(".", end="", flush=True)
-            time.sleep(1)
-        print(".", flush=True)
         return results
     
 
