@@ -68,7 +68,7 @@ class midspan_support_class:
         for i in range(2):
             print(".", end="", flush=True)
             time.sleep(1)
-            print(".", flush=True)
+        print(".", flush=True)
         return results
     
 
