@@ -1,3 +1,10 @@
+# TODO: Currently not happy with how the snmp communication is handled.
+# We need to decide which way to go forward, i.e.:
+#  1) Fully async (might be faster)
+#  2) Slower as in getPortStatus()
+
+# TODO: print port status in a nice table format (see power-clients.py in demo-expermiment repo)
+
 import asyncio
 from pysnmp import debug
 from pysnmp.hlapi.asyncio import *
@@ -66,7 +73,7 @@ class midspan_support_class:
             # Not in a loop, safe to use asyncio.run
             results = asyncio.run(self.__setPortOnOffAsync(host, onOff))
             
-        time.sleep(3)
+        time.sleep(5)
         return results
     
 
