@@ -66,10 +66,34 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
         RuntimeError: if the playbook returns a non-zero return code
     """
     
-    def get_name_from_event(line):
-        s = ansi_escape.sub('', line).strip()
-        name = s.split("[")[1].split("]")[0]
-        return name
+    def extract_relevant_line_from_event(stdout: str):
+        # remove ANSI escape sequences
+        s = ansi_escape.sub('', stdout)
+
+        # split into lines and remove empty ones
+        lines = [line.strip() for line in s.splitlines() if line.strip()]
+
+        # look for the most relevant line (priority order)
+        for line in reversed(lines):
+            if line.startswith("unreachable:") or line.startswith("fatal:") or line.startswith("ignored:") or line.startswith("failed:"):
+                return (False, line)
+            if line.startswith("ok:") or line.startswith("changed:") or line.startswith("skipped:"):
+                return (True, line)
+
+        return None, None
+    
+    def get_name_from_event(event):
+        if 'stdout' in event:
+            succeeded, line = extract_relevant_line_from_event(event['stdout'])
+            
+            if line:
+                s = ansi_escape.sub('', line).strip()
+                name = s.split("[")[1].split("]")[0]
+            
+                return (succeeded, name)
+            return None, None
+        
+        return None, None
     
     successful_hosts = []
     unsuccessful_hosts = []
@@ -106,16 +130,14 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
 
         # determine which hosts were successful
         for event in r.events:
-            #print(event)
-            if 'stdout' in event:
-                print(event['stdout'])
-                if 'ok: [' in event['stdout'] or 'changed: [' in event['stdout'] or 'skipped: [' in event['stdout']:
-                    name = get_name_from_event(event['stdout'])
+            succeeded, name = get_name_from_event(event)
+            if name:
+                if succeeded:
+                    print("hurray for: ", name)
                     if (not name in successful_hosts) and (not name in unsuccessful_hosts):
                         successful_hosts.append(name)
                         nr_succeeded += 1
-                if 'failed: [' in event['stdout'] or 'unreachable: [' in event['stdout'] or 'ignored: [' in event['stdout'] or 'fatal: [' in event['stdout']:
-                    name = get_name_from_event(event['stdout'])
+                else:
                     print("problems with: ", name)
                     if not name in unsuccessful_hosts:
                         unsuccessful_hosts.append(name)
