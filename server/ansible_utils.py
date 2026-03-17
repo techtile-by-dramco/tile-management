@@ -113,6 +113,7 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
                         nr_succeeded += 1
                 if 'failed: [' in event['stdout'] or 'unreachable: [' in event['stdout'] or 'ignored: [' in event['stdout']:
                     name = get_name_from_line(event['stdout'])
+                    print("problems with: ", name)
                     if not name in unsuccessful_hosts:
                         unsuccessful_hosts.append(name)
                     if name in successful_hosts: # previous task was succesful, but current task failed
