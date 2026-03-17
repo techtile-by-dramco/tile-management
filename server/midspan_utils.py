@@ -57,7 +57,7 @@ class midspan_support_class:
         if isinstance(host, str):
             host = [host]  # wrap single string in a list
         
-        print("Applying changes ", end="", flush=True)
+        print("Applying changes ...", flush=True)
         try:
             loop = asyncio.get_running_loop()
             # Already in a loop, schedule the coroutine
@@ -65,10 +65,8 @@ class midspan_support_class:
         except RuntimeError:
             # Not in a loop, safe to use asyncio.run
             results = asyncio.run(self.__setPortOnOffAsync(host, onOff))
-        for i in range(2):
-            print(".", end="", flush=True)
-            time.sleep(1)
-        print(".", flush=True)
+            
+        time.sleep(3)
         return results
     
 
