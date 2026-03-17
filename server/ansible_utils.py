@@ -111,7 +111,7 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
                     if (not name in successful_hosts) and (not name in unsuccessful_hosts):
                         successful_hosts.append(name)
                         nr_succeeded += 1
-                if 'failed: [' in event['stdout'] or 'unreachable: [' in event['stdout'] or 'ignored: [' in event['stdout']:
+                if 'failed: [' in event['stdout'] or 'unreachable: [' in event['stdout'] or 'ignored: [' in event['stdout'] or 'fatal: [' in event['stdout']:
                     name = get_name_from_line(event['stdout'])
                     print("problems with: ", name)
                     if not name in unsuccessful_hosts:
