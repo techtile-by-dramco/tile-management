@@ -85,12 +85,11 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
     def get_name_from_event(event):
         if 'stdout' in event:
             succeeded, line = extract_relevant_line_from_event(event['stdout'])
-            
             if line:
                 s = ansi_escape.sub('', line).strip()
                 name = s.split("[")[1].split("]")[0]
-            
                 return (succeeded, name)
+            
             return None, None
         
         return None, None
@@ -133,12 +132,10 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
             succeeded, name = get_name_from_event(event)
             if name:
                 if succeeded:
-                    print("hurray for: ", name)
                     if (not name in successful_hosts) and (not name in unsuccessful_hosts):
                         successful_hosts.append(name)
                         nr_succeeded += 1
                 else:
-                    print("problems with: ", name)
                     if not name in unsuccessful_hosts:
                         unsuccessful_hosts.append(name)
                     if name in successful_hosts: # previous task was succesful, but current task failed
