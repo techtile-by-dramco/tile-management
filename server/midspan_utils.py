@@ -2,13 +2,13 @@ import asyncio
 from pysnmp import debug
 from pysnmp.hlapi.asyncio import *
 from pathlib import Path
+import yaml
 
 
 ''' Support class for interfacing with the PD-9624GC and PD-9612GC midspans of
     the techtile infrastructure.
 '''
 class midspan_support_class:
-
     __groupNr = 1                                           # fixed - don't change
     __portPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.3'		# POE-PRIVATE-MIB.portConsumptionPower
     __portMaxPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.4'     # POE-PRIVATE-MIB.portMaxPower
@@ -24,9 +24,10 @@ class midspan_support_class:
         #debug.set_logger(
         #    debug.Debug('io', 'msgproc', 'secmod', 'dsp', 'mibbuild')
         #)
-        BASE_DIR = Path(__file__).resolve().parent.parent
-        inventory_file = BASE_DIR / "inventory/hosts.yaml"
-        print(inventory_file)
+        baseDir = Path(__file__).resolve().parent.parent
+        inventoryFile = baseDir / "inventory/hosts.yaml"    
+        with open(inventoryFile) as f:
+            self.__inventory = yaml.safe_load(f)
 
 
     ''' Use SNMP to retrieve the status of a specific midspan port
@@ -70,6 +71,26 @@ class midspan_support_class:
                 data[columns[column]] = int(value)
 
         return (data.get("maxPower"), data.get("powerDraw"))
+
+
+    def __get_poe_info(self, host):
+        hosts = self.__inventory["all"]["hosts"]
+        midspans = self.__inventory["all"]["vars"]["midspans"]
+
+        if host not in hosts:
+            raise ValueError(f"Host {host} not found")
+
+        host_data = hosts[host]
+
+        poe_port = host_data.get("poe-port")
+        midspan = host_data.get("midspan")
+
+        if not midspan:
+            return None
+
+        midspan_ip = midspans[midspan]["ip"]
+
+        return poe_port, midspan_ip
 
 
     ''' Use SNMP to retrieve the status of a specific midspan port
