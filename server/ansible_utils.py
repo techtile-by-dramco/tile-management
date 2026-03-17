@@ -3,6 +3,7 @@ import shutil
 import ansible_runner
 import json
 import ast
+import re
 from ansible.parsing.dataloader import DataLoader
 from ansible.inventory.manager import InventoryManager
 from ansible.vars.manager import VariableManager
@@ -65,14 +66,27 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
         RuntimeError: if the playbook returns a non-zero return code
     """
     
-    def get_name_from_line(line):
-        data = ast.literal_eval(line)  # safely parse dict string
-        return data.get("event_data", {}).get("host")
+    def get_name_from_event(event):
+        # Preferred: structured data
+        name = event.get("event_data", {}).get("host")
+        if name:
+            return name
+
+        # Fallback: parse stdout
+        stdout = event.get("stdout", "")
+        s = ansi_escape.sub('', stdout)
+
+        import re
+        match = re.search(r'\[([A-Za-z0-9_-]+)\]', s)
+        if match:
+            return match.group(1)
+
+        return None
     
     successful_hosts = []
     unsuccessful_hosts = []
     nr_succeeded = 0
-    #ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
+    ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
     
     if suppress_warnings:
         disable_ansible_warnings()
@@ -107,12 +121,12 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
             #print(event)
             if 'stdout' in event:
                 if 'ok: [' in event['stdout'] or 'changed: [' in event['stdout'] or 'skipped: [' in event['stdout']:
-                    name = get_name_from_line(event['stdout'])
+                    name = get_name_from_event(event['stdout'])
                     if (not name in successful_hosts) and (not name in unsuccessful_hosts):
                         successful_hosts.append(name)
                         nr_succeeded += 1
                 if 'failed: [' in event['stdout'] or 'unreachable: [' in event['stdout'] or 'ignored: [' in event['stdout'] or 'fatal: [' in event['stdout']:
-                    name = get_name_from_line(event['stdout'])
+                    name = get_name_from_event(event['stdout'])
                     print("problems with: ", name)
                     if not name in unsuccessful_hosts:
                         unsuccessful_hosts.append(name)
