@@ -10,10 +10,16 @@ import yaml
     Based on Microsemi Tech Note 132 "Using RFC3621 PoE MIB With Microsemi Midspans"
 '''
 class midspan_support_class:
-    __groupNr = 1                                           # fixed - don't change
-    __portPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.3'		# POE-PRIVATE-MIB.portConsumptionPower
-    __portMaxPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.4'     # POE-PRIVATE-MIB.portMaxPower
+    __groupNr = 1                                               # fixed - don't change
+    __pethPsePortAdminEnableOID = '.1.3.6.1.2.1.105.1.1.1.3'    # POWER-ETHERNET-MIB.pethPsePortAdminEnable
+    __portPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.3'		    # POE-PRIVATE-MIB.portConsumptionPower
+    __portMaxPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.4'         # POE-PRIVATE-MIB.portMaxPower
+    __ON = 1
+    __OFF = 2
 
+    ON = 1
+    OFF = 0
+    
     ''' Constructor
         user        login for the SNMPv3 interface
         passKey     login passward for the SNMPv3 interface
@@ -49,10 +55,10 @@ class midspan_support_class:
     '''
     def setPortOnOff(self, host: str, onOff: int):
         (midspanIP, portNr) = self.__get_poe_info(host)
-        if onOff == 1:
-            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, 1))
-        if onOff == 0:
-            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, 2))
+        if onOff == midspan_support_class.ON:
+            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, midspan_support_class.__ON))
+        if onOff == midspan_support_class.OFF:
+            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, midspan_support_class.__OFF))
         else:
             return -1
         
@@ -116,8 +122,8 @@ class midspan_support_class:
 
         # Build object types
         objs = [
-            ObjectType(ObjectIdentity(self.__portMaxPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr))),
-            ObjectType(ObjectIdentity(self.__portPowerOID + '.' + str(self.__groupNr) + '.' + str(portNr)))
+            ObjectType(ObjectIdentity(midspan_support_class.__portMaxPowerOID + '.' + str(midspan_support_class.__groupNr) + '.' + str(portNr))),
+            ObjectType(ObjectIdentity(midspan_support_class.__portPowerOID + '.' + str(midspan_support_class.__groupNr) + '.' + str(portNr)))
         ]
 
         # Perform SNMP GET asynchronously
@@ -172,7 +178,7 @@ class midspan_support_class:
 
         # Build object types
         objs = [
-            ObjectType(ObjectIdentity('.1.3.6.1.2.1.105.1.1.1.3.' + str(self.__groupNr) + '.' + str(portNr)), Integer(onOff))
+            ObjectType(ObjectIdentity(midspan_support_class.__pethPsePortAdminEnableOID + '.' + str(midspan_support_class.__groupNr) + '.' + str(portNr)), Integer(onOff))
         ]
 
         # Perform SNMP SET asynchronously
