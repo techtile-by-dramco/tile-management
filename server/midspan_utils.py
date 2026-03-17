@@ -83,7 +83,6 @@ class midspan_support_class:
             else:
                 return -1
         
-        print(tasks)
         results = await asyncio.gather(*tasks)
         return results
     
