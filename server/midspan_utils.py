@@ -35,7 +35,8 @@ class midspan_support_class:
         portNr      port number 
         returns     (onOff: int, portPower: int, portMaxPower: int, poeClass: int)
     '''
-    def getPortStatus(self, midspanIP: str, portNr: int):
+    def getPortStatus(self, host: str):
+        (midspanIP, portNr) = self.__get_poe_info(host)
         (onOff, portPower, portMaxPower, poeClass) = asyncio.run(self.__getPortStatus(midspanIP, portNr))
         return (onOff, portPower, portMaxPower, poeClass)
     
@@ -45,7 +46,8 @@ class midspan_support_class:
         portNr      port number 
         returns     result of the action
     '''
-    def setPortOnOff(self, midspanIP: str, portNr: int, onOff: int):
+    def setPortOnOff(self, host: str, onOff: int):
+        (midspanIP, portNr) = self.__get_poe_info(host)
         if onOff == 1 or onOff == 0:
             return asyncio.run(self.__setPortOnOff(midspanIP, portNr, onOff))
         else:
@@ -90,7 +92,7 @@ class midspan_support_class:
 
         midspan_ip = midspans[midspan]["ip"]
 
-        return poe_port, midspan_ip
+        return (midspan_ip, poe_port)
 
 
     ''' Use SNMP to retrieve the status of a specific midspan port
