@@ -53,15 +53,28 @@ class midspan_support_class:
         portNr      port number 
         returns     result of the action
     '''
-    def setPortOnOff(self, host: str, onOff: int):
-        (midspanIP, portNr) = self.__get_poe_info(host)
-        if onOff == midspan_support_class.ON:
-            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, midspan_support_class.__ON))
-        if onOff == midspan_support_class.OFF:
-            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, midspan_support_class.__OFF))
-        else:
-            return -1
-        
+    def setPortOnOff(self, host: str | list[str], onOff: int):
+        if isinstance(host, str):
+            host = [host]  # wrap single string in a list
+
+        tasks = []
+        for h in host:
+            print("Applying changes ", end="", flush=True) 
+            (midspanIP, portNr) = self.__get_poe_info(h)
+            if onOff == midspan_support_class.ON:
+                tasks.append(self.__safeSetPortOnOff(midspanIP, portNr, midspan_support_class.__ON))
+            if onOff == midspan_support_class.OFF:
+                tasks.append(self.__safeSetPortOnOff(midspanIP, portNr, midspan_support_class.__OFF))
+            else:
+                return -1
+            
+        results = asyncio.run(*tasks)
+        return results
+
+    async def __safeSetPortOnOff(self, midspanIP, portNr, onOff: int):
+        sem = asyncio.Semaphore(8)
+        async with sem:
+            return await self.__setPortOnOff(midspanIP, portNr, midspan_support_class.__ON)
 
     def __parse_poe_response(self, var_binds):
         columns = {
