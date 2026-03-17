@@ -205,9 +205,11 @@ class midspan_support_class:
         
     ''' Basic mapping from a max. power rating to a PoE class
         power       maximum power reserved by the port determines the PoE class
-        returns     poeClass: int (between 1 and 8)
+        returns     poeClass: int (between 1 and 8) or -1 when power is 0
     '''
     def __determineClass(self, power: int):
+        if power == 0:
+            return -1
         if power < 6:
             return 1
         if power < 10:
