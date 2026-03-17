@@ -48,8 +48,10 @@ class midspan_support_class:
     '''
     def setPortOnOff(self, host: str, onOff: int):
         (midspanIP, portNr) = self.__get_poe_info(host)
-        if onOff == 1 or onOff == 0:
-            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, onOff))
+        if onOff == 1:
+            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, 1))
+        if onOff == 0:
+            return asyncio.run(self.__setPortOnOff(midspanIP, portNr, 2))
         else:
             return -1
         
