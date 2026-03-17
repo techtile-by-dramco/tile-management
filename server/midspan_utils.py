@@ -69,6 +69,10 @@ class midspan_support_class:
                 return -1
             
         results = asyncio.run(*tasks)
+        for i in range(4):
+            print(".", end="", flush=True)
+            time.sleep(1)
+        print(".", flush=True)
         return results
 
     async def __safeSetPortOnOff(self, midspanIP, portNr, onOff: int):
