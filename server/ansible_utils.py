@@ -66,22 +66,10 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
         RuntimeError: if the playbook returns a non-zero return code
     """
     
-    def get_name_from_event(event):
-        # Preferred: structured data
-        name = event.get("event_data", {}).get("host")
-        if name:
-            return name
-
-        # Fallback: parse stdout
-        stdout = event.get("stdout", "")
-        s = ansi_escape.sub('', stdout)
-
-        import re
-        match = re.search(r'\[([A-Za-z0-9_-]+)\]', s)
-        if match:
-            return match.group(1)
-
-        return None
+    def get_name_from_event(line):
+        s = ansi_escape.sub('', line).strip()
+        name = s.split("[")[1].split("]")[0]
+        return name
     
     successful_hosts = []
     unsuccessful_hosts = []
@@ -120,6 +108,7 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
         for event in r.events:
             #print(event)
             if 'stdout' in event:
+                print(event['stdout'])
                 if 'ok: [' in event['stdout'] or 'changed: [' in event['stdout'] or 'skipped: [' in event['stdout']:
                     name = get_name_from_event(event['stdout'])
                     if (not name in successful_hosts) and (not name in unsuccessful_hosts):
