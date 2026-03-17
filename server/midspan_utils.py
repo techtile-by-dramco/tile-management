@@ -24,8 +24,8 @@ class midspan_support_class:
         #debug.set_logger(
         #    debug.Debug('io', 'msgproc', 'secmod', 'dsp', 'mibbuild')
         #)
-        BASE_DIR = Path(__file__).resolve().parent
-        inventory_file = BASE_DIR / "inventory/host.yaml"
+        BASE_DIR = Path(__file__).resolve().parent.parent
+        inventory_file = BASE_DIR / "inventory/hosts.yaml"
         print(inventory_file)
 
 
