@@ -10,12 +10,13 @@ import yaml
     Based on Microsemi Tech Note 132 "Using RFC3621 PoE MIB With Microsemi Midspans"
 '''
 class midspan_support_class:
-    __groupNr = 1                                               # fixed - don't change
-    __pethPsePortAdminEnableOID = '.1.3.6.1.2.1.105.1.1.1.3'    # POWER-ETHERNET-MIB.pethPsePortAdminEnable
-    __portPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.3'		    # POE-PRIVATE-MIB.portConsumptionPower
-    __portMaxPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.4'         # POE-PRIVATE-MIB.portMaxPower
-    __ON = 1
-    __OFF = 2
+    _groupNr = 1                                               # fixed - don't change
+    _pethPsePortAdminEnableOID = '.1.3.6.1.2.1.105.1.1.1.3'    # POWER-ETHERNET-MIB.pethPsePortAdminEnable
+    _portPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.3'		    # POE-PRIVATE-MIB.portConsumptionPower
+    _portMaxPowerOID = '.1.3.6.1.4.1.7428.1.2.1.1.1.4'         # POE-PRIVATE-MIB.portMaxPower
+    _ON = 1
+    _OFF = 2
+    _sem = asyncio.Semaphore(8)
 
     ON = 1
     OFF = 0
@@ -34,7 +35,6 @@ class midspan_support_class:
         with open(inventoryFile) as f:
             self.__inventory = yaml.safe_load(f)
 
-        self.__sem = asyncio.Semaphore(8)
 
     ''' Use SNMP to retrieve the status of a specific midspan port
         midspanIP   midspan ip address (e.g. '192.168.1.2')
@@ -72,9 +72,9 @@ class midspan_support_class:
         for h in host:
             (midspanIP, portNr) = self.__get_poe_info(h)
             if onOff == midspan_support_class.ON:
-                tasks.append(self.__safeSetPortOnOff(midspanIP, portNr, midspan_support_class.__ON))
-            if onOff == midspan_support_class.OFF:
-                tasks.append(self.__safeSetPortOnOff(midspanIP, portNr, midspan_support_class.__OFF))
+                tasks.append(self.__safeSetPortOnOff(midspanIP, portNr, midspan_support_class._ON))
+            elif onOff == midspan_support_class.OFF:
+                tasks.append(self.__safeSetPortOnOff(midspanIP, portNr, midspan_support_class._OFF))
             else:
                 return -1
         
@@ -84,7 +84,7 @@ class midspan_support_class:
     
 
     async def __safeSetPortOnOff(self, midspanIP, portNr, onOff: int):
-        async with midspan_support_class.__sem: # don't use self.__sem!
+        async with midspan_support_class._sem: # don't use self._sem!
             return await self.__setPortOnOff(midspanIP, portNr, onOff)
 
 
@@ -147,8 +147,8 @@ class midspan_support_class:
 
         # Build object types
         objs = [
-            ObjectType(ObjectIdentity(midspan_support_class.__portMaxPowerOID + '.' + str(midspan_support_class.__groupNr) + '.' + str(portNr))),
-            ObjectType(ObjectIdentity(midspan_support_class.__portPowerOID + '.' + str(midspan_support_class.__groupNr) + '.' + str(portNr)))
+            ObjectType(ObjectIdentity(midspan_support_class._portMaxPowerOID + '.' + str(midspan_support_class._groupNr) + '.' + str(portNr))),
+            ObjectType(ObjectIdentity(midspan_support_class._portPowerOID + '.' + str(midspan_support_class._groupNr) + '.' + str(portNr)))
         ]
 
         # Perform SNMP GET asynchronously
@@ -203,7 +203,7 @@ class midspan_support_class:
 
         # Build object types
         objs = [
-            ObjectType(ObjectIdentity(midspan_support_class.__pethPsePortAdminEnableOID + '.' + str(midspan_support_class.__groupNr) + '.' + str(portNr)), Integer(onOff))
+            ObjectType(ObjectIdentity(midspan_support_class._pethPsePortAdminEnableOID + '.' + str(midspan_support_class._groupNr) + '.' + str(portNr)), Integer(onOff))
         ]
 
         # Perform SNMP SET asynchronously
