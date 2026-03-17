@@ -49,14 +49,20 @@ class midspan_support_class:
     
     
     ''' Use SNMP to enable or disable specific port on a midspan
-        midspanIP   midspan ip address (e.g. '192.168.1.2')
-        portNr      port number 
+        host        (list of) hostname(s) to turn on or off.
+                    These should correspond with the hosts defined in inventory/hosts.yaml
+        onOff       midspan_support_class.ON or midspan_support_class.OFF
         returns     result of the action
     '''
     def setPortOnOff(self, host: str | list[str], onOff: int):
         if isinstance(host, str):
             host = [host]  # wrap single string in a list
+            
+        results = asyncio.run(self.__setPortOnOffAsync(host, onOff))
+        return results
+    
 
+    async def __setPortOnOffAsync(self, host: list[str], onOff: int):
         tasks = []
         for h in host:
             print("Applying changes ", end="", flush=True) 
@@ -67,18 +73,16 @@ class midspan_support_class:
                 tasks.append(self.__safeSetPortOnOff(midspanIP, portNr, midspan_support_class.__OFF))
             else:
                 return -1
-            
-        results = asyncio.run(*tasks)
-        for i in range(4):
-            print(".", end="", flush=True)
-            time.sleep(1)
-        print(".", flush=True)
+        
+        results = await asyncio.gather(*tasks)
         return results
+    
 
     async def __safeSetPortOnOff(self, midspanIP, portNr, onOff: int):
         sem = asyncio.Semaphore(8)
         async with sem:
             return await self.__setPortOnOff(midspanIP, portNr, midspan_support_class.__ON)
+
 
     def __parse_poe_response(self, var_binds):
         columns = {
