@@ -7,6 +7,7 @@ import yaml
 
 ''' Support class for interfacing with the PD-9624GC and PD-9612GC midspans of
     the techtile infrastructure.
+    Based on Microsemi Tech Note 132 "Using RFC3621 PoE MIB With Microsemi Midspans"
 '''
 class midspan_support_class:
     __groupNr = 1                                           # fixed - don't change
