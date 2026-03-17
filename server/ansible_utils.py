@@ -2,7 +2,7 @@ import os
 import shutil
 import ansible_runner
 import json
-import re
+import ast
 from ansible.parsing.dataloader import DataLoader
 from ansible.inventory.manager import InventoryManager
 from ansible.vars.manager import VariableManager
@@ -66,14 +66,13 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
     """
     
     def get_name_from_line(line):
-        s = ansi_escape.sub('', line).strip()
-        name = s.split("[")[1].split("]")[0]
-        return name
+        data = ast.literal_eval(line)  # safely parse dict string
+        return data.get("event_data", {}).get("host")
     
     successful_hosts = []
     unsuccessful_hosts = []
     nr_succeeded = 0
-    ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
+    #ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
     
     if suppress_warnings:
         disable_ansible_warnings()
@@ -105,7 +104,7 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
 
         # determine which hosts were successful
         for event in r.events:
-            print(event)
+            #print(event)
             if 'stdout' in event:
                 if 'ok: [' in event['stdout'] or 'changed: [' in event['stdout'] or 'skipped: [' in event['stdout']:
                     name = get_name_from_line(event['stdout'])
