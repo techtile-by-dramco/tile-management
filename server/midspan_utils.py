@@ -3,7 +3,7 @@ from pysnmp import debug
 from pysnmp.hlapi.asyncio import *
 from pathlib import Path
 import yaml
-
+import time
 
 ''' Support class for interfacing with the PD-9624GC and PD-9612GC midspans of
     the techtile infrastructure.
@@ -47,7 +47,7 @@ class midspan_support_class:
         return (onOff, portPower, portMaxPower, poeClass)
     
     
-    ''' Use SNMP to enable or disable specific port on a midspan
+    ''' Use SNMP to enable or disable specific port on a midspan. Don't use this inside a running event loop.
         host        (list of) hostname(s) to turn on or off.
                     These should correspond with the hosts defined in inventory/hosts.yaml
         onOff       midspan_support_class.ON or midspan_support_class.OFF
@@ -56,7 +56,8 @@ class midspan_support_class:
     def setPortOnOff(self, host: str | list[str], onOff: int):
         if isinstance(host, str):
             host = [host]  # wrap single string in a list
-            
+        
+        print("Applying changes ", end="", flush=True)
         try:
             loop = asyncio.get_running_loop()
             # Already in a loop, schedule the coroutine
@@ -64,6 +65,10 @@ class midspan_support_class:
         except RuntimeError:
             # Not in a loop, safe to use asyncio.run
             results = asyncio.run(self.__setPortOnOffAsync(host, onOff))
+        for i in range(2):
+            print(".", end="", flush=True)
+            time.sleep(1)
+            print(".", flush=True)
         return results
     
 
