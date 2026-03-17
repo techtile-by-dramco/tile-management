@@ -57,8 +57,13 @@ class midspan_support_class:
         if isinstance(host, str):
             host = [host]  # wrap single string in a list
             
-        print(host)
-        results = asyncio.run(self.__setPortOnOffAsync(host, onOff))
+        try:
+            loop = asyncio.get_running_loop()
+            # Already in a loop, schedule the coroutine
+            results = loop.run_until_complete(self.__setPortOnOffAsync(host, onOff))
+        except RuntimeError:
+            # Not in a loop, safe to use asyncio.run
+            results = asyncio.run(self.__setPortOnOffAsync(host, onOff))
         return results
     
 
