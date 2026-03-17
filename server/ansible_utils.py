@@ -98,8 +98,6 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
             settings={"forks": 10}
         )
 
-        print(r.events)
-
         # print playbook result
         if not mute_output:
             print("Status:", r.status)
@@ -107,6 +105,7 @@ def run_playbook(project_dir, playbook_path, inventory_path, extra_vars=None,
 
         # determine which hosts were successful
         for event in r.events:
+            print(event)
             if 'stdout' in event:
                 if 'ok: [' in event['stdout'] or 'changed: [' in event['stdout'] or 'skipped: [' in event['stdout']:
                     name = get_name_from_line(event['stdout'])
