@@ -7,10 +7,11 @@ TARGET_LINK="/etc/systemd/system/$SERVICE_NAME"
 
 DEFAULT_CONFIG="/home/pi/tile-management/tiles/experiment-config.yaml"
 DEFAULT_WORKDIR="/home/pi/tile-management"
+DEFAULT_INDEX="-1"
 
 usage() {
     echo "Usage:"
-    echo "  $0 install [config_path] [working_directory]"
+    echo "  $0 install [config_path] [script_index] [working_directory]"
     echo "  $0 remove"
     exit 1
 }
@@ -35,18 +36,20 @@ create_working_dir() {
 
 update_service_file() {
     local config_path="$1"
-    local working_dir="$2"
+    local script_index="$2"
+    local working_dir="$3"
 
     echo "Updating service file with:"
     echo "  CONFIG: $config_path"
-    echo "  WORKDIR: $working_dir"
+    echo "   INDEX: $script_index"
+    echo " WORKDIR: $working_dir"
 
     # Create a temp file
     tmpfile="$(mktemp)"
 
     # Update ExecStart and WorkingDirectory safely
     sed \
-        -e "s|^ExecStart=.*|ExecStart=/usr/bin/python3 /home/pi/tile-management/tiles/experiment-launcher.py $config_path|" \
+        -e "s|^ExecStart=.*|ExecStart=/usr/bin/python3 /home/pi/tile-management/tiles/experiment-launcher.py $script_index $config_path|" \
         -e "s|^WorkingDirectory=.*|WorkingDirectory=$working_dir|" \
         "$SERVICE_FILE" > "$tmpfile"
 
@@ -56,11 +59,12 @@ update_service_file() {
 
 install_link() {
     local config_path="${1:-$DEFAULT_CONFIG}"
-    local working_dir="${2:-$DEFAULT_WORKDIR}"
+    local script_index="${2:-$DEFAULT_INDEX}"
+    local working_dir="${3:-$DEFAULT_WORKDIR}"
 
     create_working_dir "$working_dir"
 
-    update_service_file "$config_path" "$working_dir"
+    update_service_file "$config_path" "$script_index" "$working_dir"
 
     echo "Installing systemd service link..."
 
