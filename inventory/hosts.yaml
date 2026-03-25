@@ -68,6 +68,8 @@ all:
       ansible_host: rpi-ref.local
     PILOT:
       ansible_host: rpi-pilot.local
+    ROVER:
+      ansible_host: TTRPI5.local
     T01:
       ansible_host: rpi-t01.local
     T02:
