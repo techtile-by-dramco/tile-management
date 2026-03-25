@@ -72,8 +72,8 @@ all:
       ansible_host: rpi-r01.local
     T01:
       ansible_host: rpi-t01.local
-    T02:
-      ansible_host: rpi-t02.local
+    REF01:
+      ansible_host: rpi-ref01.local
     T03:
       ansible_host: rpi-t03.local
     T04:
