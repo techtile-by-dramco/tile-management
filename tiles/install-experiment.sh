@@ -44,17 +44,46 @@ update_service_file() {
     echo "   INDEX: $script_index"
     echo " WORKDIR: $working_dir"
 
+    # --- Ensure working directory exists ---
+    if [[ ! -d "$working_dir" ]]; then
+        echo "Working directory does not exist. Creating: $working_dir"
+        mkdir -p "$working_dir" || {
+            echo "ERROR: Failed to create directory $working_dir"
+            return 1
+        }
+    fi
+
+    # --- Ensure ownership is pi:pi ---
+    current_owner="$(stat -c '%U:%G' "$working_dir")"
+    if [[ "$current_owner" != "pi:pi" ]]; then
+        echo "Fixing ownership (current: $current_owner, but expected: pi:pi)"
+        chown -R pi:pi "$working_dir" || {
+            echo "ERROR: Failed to set ownership on $working_dir"
+            return 1
+        }
+    fi
+
     # Create a temp file
-    tmpfile="$(mktemp)"
+    tmpfile="$(mktemp)" || {
+        echo "ERROR: Failed to create temp file"
+        return 1
+    }
 
     # Update ExecStart and WorkingDirectory safely
     sed \
         -e "s|^ExecStart=.*|ExecStart=/usr/bin/python3 /home/pi/tile-management/tiles/experiment-launcher.py $script_index $config_path|" \
         -e "s|^WorkingDirectory=.*|WorkingDirectory=$working_dir|" \
-        "$SERVICE_FILE" > "$tmpfile"
+        "$SERVICE_FILE" > "$tmpfile" || {
+            echo "ERROR: sed failed"
+            rm -f "$tmpfile"
+            return 1
+        }
 
     # Overwrite original
-    mv "$tmpfile" "$SERVICE_FILE"
+    mv "$tmpfile" "$SERVICE_FILE" || {
+        echo "ERROR: Failed to overwrite service file"
+        return 1
+    }
 }
 
 install_link() {
