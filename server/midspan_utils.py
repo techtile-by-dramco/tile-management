@@ -50,8 +50,8 @@ class midspan_support_class:
     '''
     def getPortStatus(self, host: str):
         (midspanIP, portNr) = self.__get_poe_info(host)
-        (onOff, portPower, portMaxPower, poeClass) = asyncio.run(self.__getPortStatus(midspanIP, portNr))
-        return (onOff, portPower, portMaxPower, poeClass)
+        (onOff, portPower, portMaxPower, poeClass, error) = asyncio.run(self.__getPortStatus(midspanIP, portNr))
+        return (onOff, portPower, portMaxPower, poeClass, error)
     
     
     ''' Use SNMP to enable or disable specific port on a midspan. Don't use this inside a running event loop.
@@ -172,27 +172,29 @@ class midspan_support_class:
         onOff = -1
         powerDraw = -1
         maxPower = -1
+        error = -1
 
         # parse the results
         if errorIndication:
             print(errorIndication)
+            error = 1
 
         elif errorStatus:
             print('%s at %s' % (errorStatus.prettyPrint(),
                                 errorIndex and responses[int(errorIndex) - 1][0] or '?'))
+            error = 1
 
         else: # we got a valid response
             if not len(responses) == 2:     # we only expect 2 responses (because we've sent 2 commands)
                 print('ERROR: unexpected response from midspan')
             else:
                 (maxPower, powerDraw) = self.__parse_poe_response(responses)
-                
                 if powerDraw > 0:
                     onOff = 1
                 else:
                     onOff = 0
 
-        return (onOff, powerDraw, maxPower, self.__determineClass(maxPower))
+        return (onOff, powerDraw, maxPower, self.__determineClass(maxPower), error)
     
     
     ''' For internal use only
